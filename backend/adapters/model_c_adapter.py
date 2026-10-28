@@ -7,14 +7,13 @@ from backend.adapters.base import BaseModelAdapter, load_module_from_file
 from backend.schemas.envelope import ModelEnvelope
 
 class ModelCAdapter(BaseModelAdapter):
-    # Typed as Any so Pyrefly does not infer NoneType from __init__
-    bundle: Any
-    mc: Any
+    bundle: Any = None
+    mc: Any = None
 
     def __init__(self) -> None:
         super().__init__("model_c", "PyTorch BiGRU Idea Evaluator")
-        self.bundle: Any = None
-        self.mc: Any = None
+        self.bundle = None
+        self.mc = None
 
     def load(self, artifact_dir: Path) -> None:
         p = Path(artifact_dir)
@@ -57,6 +56,9 @@ class ModelCAdapter(BaseModelAdapter):
             )
 
         try:
+            if self.mc is None or self.bundle is None:
+                raise RuntimeError("Model C adapter is not loaded. Call load() before predict().")
+
             idea_text = str(payload.get("idea_text") or "").strip()
             declared_sector = payload.get("declared_sector")
             if declared_sector is not None:

@@ -8,14 +8,13 @@ from backend.adapters.base import BaseModelAdapter, load_module_from_file
 from backend.schemas.envelope import ModelEnvelope
 
 class ModelBAdapter(BaseModelAdapter):
-    # Typed as Any so Pyrefly does not infer NoneType from __init__
-    bundle: Any
-    mb: Any
+    bundle: Any = None
+    mb: Any = None
 
     def __init__(self) -> None:
         super().__init__("model_b", "LogisticRegression + Platt calibration")
-        self.bundle: Any = None
-        self.mb: Any = None
+        self.bundle = None
+        self.mb = None
 
     def load(self, artifact_dir: Path) -> None:
         p = Path(artifact_dir)
@@ -67,6 +66,9 @@ class ModelBAdapter(BaseModelAdapter):
             )
 
         try:
+            if self.mb is None or self.bundle is None:
+                raise RuntimeError("Model B adapter is not loaded. Call load() before predict().")
+
             clean_payload = {
                 "category_code": str(payload.get("category_code") or "other").lower(),
                 "state_code": str(payload.get("state_code") or "OTHER").upper(),

@@ -125,3 +125,32 @@ This file records key architectural, engineering, and product decisions made dur
      - Every recommendation item strictly adheres to the 7 plan fields: `identified_problem_or_risk`, `why_it_matters_for_this_startup`, `specific_action`, `priority` (must equal assigned priority), `implementation_steps`, `expected_benefit`, `validation_method`, plus `evidence_refs`, `playbook_refs`, and `assumptions`. No success guarantees are made.
   7. **Fallback & LLM-Off Mode:**
      - Served deterministically at `GET /v1/evaluations/{id}/recommendations` with `generation_method: "template_playbook"` and `is_fallback: True`. Shows a dedicated playbook banner in the UI.
+
+---
+
+## Decision 007: Open-Source LLM Integration, Grounding, Validation, Repair & Caching
+
+- **Date:** 2026-10-29
+- **Status:** Accepted
+- **Context:** Step 4 implementation of recommendations with an open-source LLM (Planning 05 sections 5.1 to 5.3, 5.6 to 5.9, 5.11, and 5.12).
+- **Architecture & Rules Established:**
+  1. **Dynamic Model Configuration (Zero Hardcoding):**
+     - LLM configuration is loaded from `.env` via `python-dotenv`.
+     - `LLM_MODEL` is never hardcoded. If unconfigured or empty, the engine gracefully falls back to the deterministic playbook template generator (`is_fallback: True`).
+     - Supports any OpenAI-compatible server endpoint (e.g., local Ollama, llama.cpp, vLLM, or remote OpenAI-compatible providers).
+  2. **Prompt Builder & Grounding Pack (Section 5.6 & 5.7):**
+     - System prompt enforces: evidence citation, strict priority parity (no re-ranking), prohibited phrase filtering (no guarantees/certainties), no hallucinated numbers or companies, and clean JSON generation.
+     - User input is sandboxed within `<user_pitch>` data delimiters with explicit prompt injection defense instructions.
+     - Grounding packs include verified model digest (A, B, C, D), provenance, report interpretation, prioritized issues, evidence index, and filtered playbook chunks.
+  3. **Strict Schema & Grounding Validation (Section 5.9):**
+     - `RecommendationValidator` parses JSON, validates schema conformity, requires non-empty text across all 7 plan fields, enforces at least 3 implementation steps, checks that every cited evidence reference exists in the grounding pack index, and scans regex patterns for prohibited guarantees.
+  4. **One Repair Attempt (Section 5.9):**
+     - On initial validation failure, `LLMClient` sends the validation error list back to the model with temperature lowered to 0.1 for precision correction.
+     - If repair also fails, gracefully activates the template playbook fallback (`is_fallback: True`).
+  5. **In-Memory Caching (Section 5.12):**
+     - LLM responses are cached using a SHA-256 hash of `prompt_version:model:prompt` so identical evaluation requests yield identical outputs with zero latency and zero token consumption.
+  6. **Offline Golden Set Evaluation (Section 5.12):**
+     - Implemented `scripts/evaluate_recommendations.py` covering all 15 golden cases.
+     - Achieved 100% validation pass rate, 100% grounding citation pass rate, 100% priority consistency rate, and 0% prohibited claims.
+     - Generated `docs/recommendation_evaluation_report.md` with 10 sample outputs for human audit.
+

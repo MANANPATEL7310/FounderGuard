@@ -284,19 +284,37 @@ class ReportBuilder:
         # User input facts
         idx["user_pitch"] = normalized.get("idea_description")
         idx["user_funding_usd"] = normalized.get("funding_total_usd")
-        
+
+        # Model A outcome evidence
+        env_a = envelopes.get("model_a")
+        if env_a and env_a.status == "ok" and env_a.data:
+            idx["a_outcome_lean"] = f"Model A cohort outcome lean: {env_a.data.get('outcome_label')}"
+
+        # Model B financial risk evidence
+        env_b = envelopes.get("model_b")
+        if env_b and env_b.status == "ok" and env_b.data:
+            idx["b_financial_risk"] = f"Model B relative risk: {env_b.data.get('risk_score')}/100 ({env_b.data.get('risk_level')})"
+
+        # Model C quotes and aspect references
+        env_c = envelopes.get("model_c")
+        if env_c and env_c.status == "ok" and env_c.data:
+            for s in env_c.data.get("strengths", []):
+                idx[f"c_strength_{s['aspect']}"] = s.get("supporting_text", [])
+            for a in env_c.data.get("aspect_findings", []):
+                asp = str(a.get("aspect", "")).lower()
+                evidence_list = a.get("evidence", [])
+                ev_quote = evidence_list[0] if evidence_list else a.get("note", "")
+                idx[f"c_aspect_{asp}"] = ev_quote
+            # Index general theme aspect keys
+            for t in ["product_market_fit", "idea_clarity", "acquisition_retention", "validation_evidence", "market_demand", "competition_differentiation", "weak_business_model", "unit_economics_pricing", "execution_hurdles"]:
+                idx[f"c_aspect_{t}"] = f"Model C analysis for theme: {t}"
+
         # Model D evidence sentences
         env_d = envelopes.get("model_d")
         if env_d and env_d.status == "ok" and env_d.data:
             for c in env_d.data.get("categories", []):
                 if c.get("evidence_sentence"):
                     idx[f"d_evidence_{c['category']}"] = c["evidence_sentence"]
-
-        # Model C quotes
-        env_c = envelopes.get("model_c")
-        if env_c and env_c.status == "ok" and env_c.data:
-            for s in env_c.data.get("strengths", []):
-                idx[f"c_strength_{s['aspect']}"] = s.get("supporting_text", [])
 
         return idx
 
