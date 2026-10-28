@@ -92,3 +92,36 @@ This file records key architectural, engineering, and product decisions made dur
      - Trust Panel with provenance tracking (provided vs unstated fields), currency conversion rates, and limitations.
      - Recommendations tab showing "Coming Soon" placeholder for Step 3/4.
      - Privacy controls: "Delete My Data" invoking `DELETE /v1/evaluations/{id}`.
+
+
+---
+
+## Decision 006: Recommendation Engine Architecture, Priority Rules & Playbook Fallback
+
+- **Date:** 2026-10-28
+- **Status:** Accepted
+- **Context:** Step 3 implementation of recommendations without an LLM (Planning 05 sections 5.4, 5.5, 5.8, 5.10, and Planning 04 section 4.6).
+- **Architecture & Rules Established:**
+  1. **Shared Theme Taxonomy:** 11 shared themes mapping across all 4 models:
+     - 8 Model D categories: `market_demand`, `funding_cashflow`, `competition_differentiation`, `unit_economics_pricing`, `acquisition_retention`, `team_operations`, `weak_business_model`, `product_market_fit`.
+     - 3 extra operational themes: `idea_clarity`, `validation_evidence`, `execution_hurdles`.
+  2. **Deterministic Priority Rules:**
+     - **High Priority:**
+       - Supported by 2 or more distinct models (e.g., Model D prediction + Model C aspect gap).
+       - Model D predicts theme with acceptable label quality (`predicted == True`).
+       - Matches a Model B risk-raising factor while Model B overall risk is High or Very High.
+     - **Medium Priority:**
+       - Single model moderate signal (e.g., Model D prob >= 0.40, Model C partial/risk signal, or Model B moderate factor).
+     - **Low Priority:**
+       - Weak single signals or uncorroborated "not stated" gaps in optional fields.
+  3. **Out-of-Distribution (OOD) Capping:**
+     - When Model D OOD is flagged (`ood.flagged == True`), any issue supported solely by Model D is strictly capped at **Medium** priority. Multi-model corroborated issues retain High.
+  4. **Strict "Not Stated" Framing:**
+     - Unstated fields are never described as confirmed problems or faults; they are framed as validation/clarification requests.
+  5. **Curated Playbook Knowledge Base:**
+     - 13 curated advice chunks stored in `playbook/playbook_data.json` covering: customer discovery interviews, landing-page smoke tests, concierge MVPs, competitor differentiation mapping, pricing sensitivity experiments, unit economics audits, channel testing, retention cohorts, runway planning, skills gap audits, business model canvas, idea clarity, and pivot criteria.
+     - Playbook matching filters by both `theme` and operational `stage` (e.g., pre-funding ideas receive discovery advice, not fundraising plans).
+  6. **Recommendation Structure Parity (Section 5.8):**
+     - Every recommendation item strictly adheres to the 7 plan fields: `identified_problem_or_risk`, `why_it_matters_for_this_startup`, `specific_action`, `priority` (must equal assigned priority), `implementation_steps`, `expected_benefit`, `validation_method`, plus `evidence_refs`, `playbook_refs`, and `assumptions`. No success guarantees are made.
+  7. **Fallback & LLM-Off Mode:**
+     - Served deterministically at `GET /v1/evaluations/{id}/recommendations` with `generation_method: "template_playbook"` and `is_fallback: True`. Shows a dedicated playbook banner in the UI.

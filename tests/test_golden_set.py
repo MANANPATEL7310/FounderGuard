@@ -525,3 +525,26 @@ def test_golden_case(client, case):
         for cat in exp["model_d_predicted_categories"]:
             assert cat in rep["models"]["model_d"]["data"]["predicted_categories"]
 
+    # 6. Verify prioritized template recommendations (Step 3)
+    res_rec = client.get(f"/v1/evaluations/{eval_id}/recommendations")
+    assert res_rec.status_code == 200
+    rec_data = res_rec.json()
+    assert rec_data["status"] == "complete"
+    assert rec_data["is_fallback"] is True
+    assert rec_data["generation_method"] == "template_playbook"
+    assert len(rec_data["recommendations"]) > 0
+
+    # Verify every recommendation satisfies the 7 plan fields and priority constraint
+    for r in rec_data["recommendations"]:
+        assert r["id"]
+        assert r["issue_id"]
+        assert r["identified_problem_or_risk"]
+        assert r["why_it_matters_for_this_startup"]
+        assert r["specific_action"]
+        assert r["priority"] in ("High", "Medium", "Low")
+        assert len(r["implementation_steps"]) >= 3
+        assert r["expected_benefit"]
+        assert r["validation_method"]
+        assert len(r["playbook_refs"]) >= 1
+        assert "guarantee" not in r["expected_benefit"].lower()
+

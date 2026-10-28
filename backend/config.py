@@ -3,6 +3,7 @@ from pathlib import Path
 
 # Paths
 ROOT_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = ROOT_DIR
 MODELS_DIR = ROOT_DIR / "models"
 MANIFEST_PATH = MODELS_DIR / "manifest.json"
 

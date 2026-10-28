@@ -79,6 +79,14 @@ def get_report(eval_id: str) -> dict | None:
         return None
 
 
+# ── Recommendations ───────────────────────────────────────────────────────────
+def get_recommendations(eval_id: str) -> dict | None:
+    try:
+        return _get(f"/v1/evaluations/{eval_id}/recommendations")
+    except Exception:
+        return None
+
+
 # ── Delete ────────────────────────────────────────────────────────────────────
 def delete_evaluation(eval_id: str) -> bool:
     try:
