@@ -1,5 +1,7 @@
-"""Template-based recommendation generator fulfilling Section 5.8 and 5.10."""
+"""Template-based and LLM recommendation generator fulfilling Section 5.8, 5.10, and 5.11."""
 from typing import Any, Dict, List
+from backend.recommendations.grounding import GroundingPackBuilder
+from backend.recommendations.llm_client import llm_client
 from backend.recommendations.playbook import playbook_kb
 from backend.recommendations.prioritizer import IssuePrioritizer
 from backend.schemas.envelope import ModelEnvelope
@@ -35,6 +37,19 @@ class RecommendationEngine:
             evidence_index=evidence_index,
         )
 
+        # 2. Build Grounding Pack and attempt LLM generation (if enabled and configured)
+        grounding_pack = GroundingPackBuilder.build_grounding_pack(
+            evaluation_id=evaluation_id,
+            normalized=normalized,
+            envelopes=envelopes,
+            report=report,
+        )
+
+        llm_response = llm_client.generate_recommendations(grounding_pack)
+        if llm_response is not None:
+            return llm_response
+
+        # 3. Fallback: Curated Playbook Template Generator
         recommendations: List[RecommendationItem] = []
         clarifying_questions: List[ClarifyingQuestion] = []
         overall_assumptions: List[str] = [

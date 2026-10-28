@@ -10,11 +10,15 @@ from backend.config import MODEL_A_MAX_TRAINING_YEAR
 from backend.schemas.envelope import ModelEnvelope
 
 class ModelAAdapter(BaseModelAdapter):
+    bundle: Optional[Dict[str, Any]] = None
+    clf: Any = None
+    sf: Any = None
+
     def __init__(self) -> None:
         super().__init__("model_a", "Startup Outcome Classifier")
-        self.bundle: Any = None
-        self.clf: Any = None
-        self.sf: Any = None
+        self.bundle = None
+        self.clf = None
+        self.sf = None
 
     def load(self, artifact_dir: Path) -> None:
         p = Path(artifact_dir)
@@ -49,8 +53,8 @@ class ModelAAdapter(BaseModelAdapter):
 
         # Verify dates are parseable
         for d_col in ["founded_at", "first_funding_at", "last_funding_at"]:
-            val = str(payload.get(d_col) or "")
-            dt = pd.to_datetime(val, errors="coerce")
+            val_str: str = str(payload.get(d_col) or "").strip()
+            dt = pd.to_datetime(val_str, errors="coerce")
             if pd.isna(dt):
                 return False, f"dates missing or invalid: '{d_col}' could not be parsed as a date."
 
@@ -96,6 +100,9 @@ class ModelAAdapter(BaseModelAdapter):
                     f"Founding or funding date year ({max(years)}) exceeds the training dataset's maximum year ({MODEL_A_MAX_TRAINING_YEAR}). "
                     f"Predictions on recent cohorts may experience temporal distribution drift."
                 )
+
+            if self.sf is None or self.clf is None:
+                raise RuntimeError("Model A adapter is not loaded. Call load() before predict().")
 
             # Ensure clean payload with exact RAW_COLS
             raw_cols = getattr(self.sf, "RAW_COLS", [

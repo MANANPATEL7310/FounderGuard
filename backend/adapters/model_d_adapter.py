@@ -8,14 +8,13 @@ from backend.adapters.base import BaseModelAdapter, load_module_from_file
 from backend.schemas.envelope import ModelEnvelope
 
 class ModelDAdapter(BaseModelAdapter):
-    # Typed as Any so Pyrefly does not infer NoneType from __init__
-    clf: Any
-    md: Any
+    clf: Any = None
+    md: Any = None
 
     def __init__(self) -> None:
         super().__init__("model_d", "Failure Category Classifier")
-        self.clf: Any = None
-        self.md: Any = None
+        self.clf = None
+        self.md = None
 
     def load(self, artifact_dir: Path) -> None:
         p = Path(artifact_dir)
@@ -57,6 +56,9 @@ class ModelDAdapter(BaseModelAdapter):
             )
 
         try:
+            if self.clf is None:
+                raise RuntimeError("Model D adapter is not loaded. Call load() before predict().")
+
             text = str(payload.get("text") or "").strip()
             top_k_raw = payload.get("top_k_cases")
             try:
