@@ -8,10 +8,14 @@ from backend.adapters.base import BaseModelAdapter, load_module_from_file
 from backend.schemas.envelope import ModelEnvelope
 
 class ModelBAdapter(BaseModelAdapter):
-    def __init__(self):
+    # Typed as Any so Pyrefly does not infer NoneType from __init__
+    bundle: Any
+    mb: Any
+
+    def __init__(self) -> None:
         super().__init__("model_b", "LogisticRegression + Platt calibration")
-        self.bundle = None
-        self.mb = None
+        self.bundle: Any = None
+        self.mb: Any = None
 
     def load(self, artifact_dir: Path) -> None:
         p = Path(artifact_dir)

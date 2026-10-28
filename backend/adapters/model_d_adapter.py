@@ -8,10 +8,14 @@ from backend.adapters.base import BaseModelAdapter, load_module_from_file
 from backend.schemas.envelope import ModelEnvelope
 
 class ModelDAdapter(BaseModelAdapter):
-    def __init__(self):
+    # Typed as Any so Pyrefly does not infer NoneType from __init__
+    clf: Any
+    md: Any
+
+    def __init__(self) -> None:
         super().__init__("model_d", "Failure Category Classifier")
-        self.clf = None
-        self.md = None
+        self.clf: Any = None
+        self.md: Any = None
 
     def load(self, artifact_dir: Path) -> None:
         p = Path(artifact_dir)

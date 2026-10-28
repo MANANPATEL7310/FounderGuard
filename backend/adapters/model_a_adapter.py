@@ -1,6 +1,7 @@
 """Model A Adapter: Startup Outcome Classifier."""
 import time
 import pickle
+import types
 from pathlib import Path
 from typing import Any, Dict, Optional, Tuple
 import pandas as pd
@@ -10,11 +11,16 @@ from backend.config import MODEL_A_MAX_TRAINING_YEAR
 from backend.schemas.envelope import ModelEnvelope
 
 class ModelAAdapter(BaseModelAdapter):
-    def __init__(self):
+    # Typed as Any / ModuleType so Pyrefly does not infer NoneType from __init__
+    bundle: Any
+    clf: Any
+    sf: types.ModuleType
+
+    def __init__(self) -> None:
         super().__init__("model_a", "Startup Outcome Classifier")
-        self.bundle = None
-        self.clf = None
-        self.sf = None
+        self.bundle: Any = None
+        self.clf: Any = None
+        self.sf: Any = None
 
     def load(self, artifact_dir: Path) -> None:
         p = Path(artifact_dir)
@@ -49,7 +55,7 @@ class ModelAAdapter(BaseModelAdapter):
 
         # Verify dates are parseable
         for d_col in ["founded_at", "first_funding_at", "last_funding_at"]:
-            val = payload.get(d_col)
+            val = str(payload.get(d_col) or "")
             dt = pd.to_datetime(val, errors="coerce")
             if pd.isna(dt):
                 return False, f"dates missing or invalid: '{d_col}' could not be parsed as a date."
@@ -87,7 +93,7 @@ class ModelAAdapter(BaseModelAdapter):
             for d_col in ["founded_at", "first_funding_at", "last_funding_at"]:
                 val = payload.get(d_col)
                 if val:
-                    dt = pd.to_datetime(val, errors="coerce")
+                    dt = pd.to_datetime(str(val), errors="coerce")
                     if dt and not pd.isna(dt):
                         years.append(dt.year)
 

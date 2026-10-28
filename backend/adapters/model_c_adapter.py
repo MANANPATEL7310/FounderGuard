@@ -7,10 +7,14 @@ from backend.adapters.base import BaseModelAdapter, load_module_from_file
 from backend.schemas.envelope import ModelEnvelope
 
 class ModelCAdapter(BaseModelAdapter):
-    def __init__(self):
+    # Typed as Any so Pyrefly does not infer NoneType from __init__
+    bundle: Any
+    mc: Any
+
+    def __init__(self) -> None:
         super().__init__("model_c", "PyTorch BiGRU Idea Evaluator")
-        self.bundle = None
-        self.mc = None
+        self.bundle: Any = None
+        self.mc: Any = None
 
     def load(self, artifact_dir: Path) -> None:
         p = Path(artifact_dir)
