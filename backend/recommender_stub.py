@@ -8,3 +8,4 @@ def get_recommendations_stub(evaluation_id: str) -> Dict[str, Any]:
         "items": [],
         "note": "Recommendation engine will be activated in Step 3 (playbook rules) and Step 4 (LLM).",
     }
+

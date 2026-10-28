@@ -222,3 +222,4 @@ def delete_evaluation(eval_id: str):
     if not success:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Evaluation not found")
     return {"deleted": True, "evaluation_id": eval_id}
+

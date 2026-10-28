@@ -379,3 +379,4 @@ class ReportBuilder:
         )
 
         return [sec_1, sec_2, sec_3, sec_4, sec_5, sec_6, sec_7, sec_8]
+

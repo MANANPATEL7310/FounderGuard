@@ -135,3 +135,4 @@ def test_submit_and_fetch_report(client):
     res_del = client.delete(f"/v1/evaluations/{eval_id}")
     assert res_del.status_code == 200
     assert res_del.json()["deleted"] is True
+

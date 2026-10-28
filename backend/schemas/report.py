@@ -39,3 +39,4 @@ class EvaluationStatusResponse(BaseModel):
     completed_at: Optional[str] = None
     per_model_status: Dict[str, str]
     report_url: Optional[str] = None
+

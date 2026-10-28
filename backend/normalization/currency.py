@@ -25,3 +25,4 @@ def convert_to_usd(amount: float, currency: str) -> Tuple[float, float, str]:
     rate = EXCHANGE_RATES_USD.get(curr, 1.0)
     usd_val = round(float(amount or 0.0) * rate, 2)
     return usd_val, rate, RATES_DATE
+

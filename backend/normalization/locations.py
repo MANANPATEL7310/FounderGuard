@@ -50,3 +50,4 @@ def normalize_location(country: str, state: str = None) -> Tuple[str, str, str, 
             st = "OTHER"
             
     return country_code, st, model_b_state, is_us
+

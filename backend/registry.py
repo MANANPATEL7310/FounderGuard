@@ -70,3 +70,4 @@ class ModelRegistry:
 
 # Global registry singleton
 registry = ModelRegistry()
+

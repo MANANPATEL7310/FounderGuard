@@ -96,3 +96,4 @@ def map_industry(industry: str) -> Tuple[str, str, str]:
         return entry["model_b"], entry["model_c"], entry["model_a"]
     # Fallback default
     return "other", "B2B", "Other"
+

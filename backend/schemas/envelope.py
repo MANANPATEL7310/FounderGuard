@@ -11,3 +11,4 @@ class ModelEnvelope(BaseModel):
     warnings: List[str] = Field(default_factory=list, description="Warnings from model and backend normalization")
     runtime_ms: float = Field(default=0.0, description="Execution time in milliseconds")
     inputs_used: List[str] = Field(default_factory=list, description="Names of inputs used by the model")
+

@@ -14,3 +14,4 @@ class OptionsResponse(BaseModel):
     investor_types: List[str] = Field(description="Investor types")
     funding_rounds_options: List[str] = Field(description="Funding round milestones reached")
     field_limits: Dict[str, int] = Field(description="Character and value constraints")
+

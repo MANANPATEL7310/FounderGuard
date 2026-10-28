@@ -24,13 +24,24 @@ class ModelCAdapter(BaseModelAdapter):
         self.bundle = mc.load_bundle(str(encoder_pt))
 
     def check_applicability(self, payload: Dict[str, Any]) -> Tuple[bool, Optional[str]]:
-        text = payload.get("idea_text", "").strip()
+        if not payload or not isinstance(payload, dict):
+            return False, "Payload must be a dictionary."
+        text = str(payload.get("idea_text") or "").strip()
         if not text:
             return False, "Model C requires an idea pitch / description."
         return True, None
 
     def predict(self, payload: Dict[str, Any]) -> ModelEnvelope:
         start_t = time.perf_counter()
+        if not payload or not isinstance(payload, dict):
+            return ModelEnvelope(
+                model_id=self.model_id,
+                model_name=self.model_name,
+                status="error",
+                applicability_reason="Payload must be a dictionary",
+                runtime_ms=0.0
+            )
+
         is_app, reason = self.check_applicability(payload)
         if not is_app:
             return ModelEnvelope(
@@ -45,9 +56,13 @@ class ModelCAdapter(BaseModelAdapter):
             )
 
         try:
-            idea_text = payload.get("idea_text", "")
+            idea_text = str(payload.get("idea_text") or "").strip()
             declared_sector = payload.get("declared_sector")
-            extra = payload.get("extra", {})
+            if declared_sector is not None:
+                declared_sector = str(declared_sector).strip() or None
+
+            extra_raw = payload.get("extra")
+            extra = dict(extra_raw) if isinstance(extra_raw, dict) else {}
 
             res = self.mc.evaluate_idea(
                 self.bundle,

@@ -114,3 +114,37 @@ def test_model_d_adapter_contract():
     # 2. Empty text -> not_applicable
     env_empty = adapter.predict({"text": ""})
     assert env_empty.status == "not_applicable"
+
+
+
+def test_adapter_edge_cases_and_null_safety():
+    adapter_a = registry.get_adapter("model_a")
+    adapter_b = registry.get_adapter("model_b")
+    adapter_c = registry.get_adapter("model_c")
+    adapter_d = registry.get_adapter("model_d")
+
+    # 1. Null / None payloads
+    assert adapter_a.predict(None).status in ("not_applicable", "error")
+    assert adapter_b.predict(None).status in ("not_applicable", "error")
+    assert adapter_c.predict(None).status in ("not_applicable", "error")
+    assert adapter_d.predict(None).status in ("not_applicable", "error")
+
+    # 2. Explicit None values in keys
+    assert adapter_c.predict({"idea_text": None}).status == "not_applicable"
+    assert adapter_c.predict({"idea_text": "Valid idea text", "extra": None}).status == "ok"
+    assert adapter_d.predict({"text": None}).status == "not_applicable"
+    assert adapter_d.predict({"text": "Valid text description for testing", "top_k_cases": None}).status == "ok"
+
+    # 3. Invalid types in numeric fields
+    assert adapter_a.predict({"funding_total_usd": "invalid", "funding_rounds": "bad"}).status == "not_applicable"
+    assert adapter_b.predict({"funding_total_usd": "invalid", "funding_rounds": "bad"}).status == "not_applicable"
+
+    # 4. Model B with missing optional flags
+    payload_b_sparse = {
+        "category_code": "software",
+        "state_code": "CA",
+        "funding_total_usd": 1000000.0,
+        "funding_rounds": 1
+    }
+    env_b = adapter_b.predict(payload_b_sparse)
+    assert env_b.status == "ok"

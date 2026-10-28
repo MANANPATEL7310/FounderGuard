@@ -28,3 +28,4 @@ class BaseModelAdapter(ABC):
         Must never raise uncaught exceptions; errors should be caught and returned in envelope.
         """
         pass
+

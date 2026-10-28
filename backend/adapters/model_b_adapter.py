@@ -25,14 +25,33 @@ class ModelBAdapter(BaseModelAdapter):
         self.bundle = joblib.load(joblib_path)
 
     def check_applicability(self, payload: Dict[str, Any]) -> Tuple[bool, Optional[str]]:
-        funding = float(payload.get("funding_total_usd") or 0.0)
-        rounds = int(payload.get("funding_rounds") or 0)
+        if not payload or not isinstance(payload, dict):
+            return False, "Payload must be a dictionary."
+
+        try:
+            funding_raw = payload.get("funding_total_usd")
+            funding = float(funding_raw) if funding_raw is not None else 0.0
+            rounds_raw = payload.get("funding_rounds")
+            rounds = int(rounds_raw) if rounds_raw is not None else 0
+        except (ValueError, TypeError):
+            return False, "Invalid funding_total_usd or funding_rounds value."
+
         if funding <= 0 or rounds < 1:
             return False, "Model B was trained on funded startups: funding_total_usd > 0 and funding_rounds >= 1 required."
+
         return True, None
 
     def predict(self, payload: Dict[str, Any]) -> ModelEnvelope:
         start_t = time.perf_counter()
+        if not payload or not isinstance(payload, dict):
+            return ModelEnvelope(
+                model_id=self.model_id,
+                model_name=self.model_name,
+                status="error",
+                applicability_reason="Payload must be a dictionary",
+                runtime_ms=0.0
+            )
+
         is_app, reason = self.check_applicability(payload)
         if not is_app:
             return ModelEnvelope(
@@ -47,8 +66,21 @@ class ModelBAdapter(BaseModelAdapter):
             )
 
         try:
-            # Model B inference module validates and runs
-            res = self.mb.predict_failure_risk(self.bundle, payload)
+            # Ensure all required fields for model_b_inference.validate_input exist with sensible defaults
+            clean_payload = {
+                "category_code": str(payload.get("category_code") or "other").lower(),
+                "state_code": str(payload.get("state_code") or "OTHER").upper(),
+                "funding_total_usd": float(payload.get("funding_total_usd") or 0.0),
+                "funding_rounds": int(payload.get("funding_rounds") or 1),
+                "has_VC": int(bool(payload.get("has_VC", 0))),
+                "has_angel": int(bool(payload.get("has_angel", 0))),
+                "has_roundA": int(bool(payload.get("has_roundA", 0))),
+                "has_roundB": int(bool(payload.get("has_roundB", 0))),
+                "has_roundC": int(bool(payload.get("has_roundC", 0))),
+                "has_roundD": int(bool(payload.get("has_roundD", 0))),
+            }
+
+            res = self.mb.predict_failure_risk(self.bundle, clean_payload)
             warnings = res.get("warnings", [])
 
             return ModelEnvelope(

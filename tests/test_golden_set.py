@@ -524,3 +524,4 @@ def test_golden_case(client, case):
     if exp.get("model_d_predicted_categories"):
         for cat in exp["model_d_predicted_categories"]:
             assert cat in rep["models"]["model_d"]["data"]["predicted_categories"]
+

@@ -19,7 +19,6 @@ class ModelAAdapter(BaseModelAdapter):
 
     def load(self, artifact_dir: Path) -> None:
         p = Path(artifact_dir)
-        # Import startup_features from the model folder
         if str(p) not in sys.path:
             sys.path.insert(0, str(p))
         import startup_features as sf
@@ -31,8 +30,17 @@ class ModelAAdapter(BaseModelAdapter):
         self.clf = self.bundle["model"]
 
     def check_applicability(self, payload: Dict[str, Any]) -> Tuple[bool, Optional[str]]:
-        funding = float(payload.get("funding_total_usd") or 0.0)
-        rounds = int(payload.get("funding_rounds") or 0)
+        if not payload or not isinstance(payload, dict):
+            return False, "Payload must be a dictionary."
+
+        try:
+            funding_raw = payload.get("funding_total_usd")
+            funding = float(funding_raw) if funding_raw is not None else 0.0
+            rounds_raw = payload.get("funding_rounds")
+            rounds = int(rounds_raw) if rounds_raw is not None else 0
+        except (ValueError, TypeError):
+            return False, "Invalid funding_total_usd or funding_rounds value."
+
         if funding <= 0 or rounds <= 0:
             return False, "Model A is not applicable to pre-funding ideas (funding is 0 or rounds are 0)."
 
@@ -42,10 +50,26 @@ class ModelAAdapter(BaseModelAdapter):
         if not founded or not first or not last or str(founded).strip() == "" or str(first).strip() == "" or str(last).strip() == "":
             return False, "dates missing: founded_at, first_funding_at, and last_funding_at are required for Model A."
 
+        # Verify dates are parseable
+        for d_col in ["founded_at", "first_funding_at", "last_funding_at"]:
+            val = payload.get(d_col)
+            dt = pd.to_datetime(val, errors="coerce")
+            if pd.isna(dt):
+                return False, f"dates missing or invalid: '{d_col}' could not be parsed as a date."
+
         return True, None
 
     def predict(self, payload: Dict[str, Any]) -> ModelEnvelope:
         start_t = time.perf_counter()
+        if not payload or not isinstance(payload, dict):
+            return ModelEnvelope(
+                model_id=self.model_id,
+                model_name=self.model_name,
+                status="error",
+                applicability_reason="Payload must be a dictionary",
+                runtime_ms=0.0
+            )
+
         is_app, reason = self.check_applicability(payload)
         if not is_app:
             return ModelEnvelope(
@@ -76,8 +100,14 @@ class ModelAAdapter(BaseModelAdapter):
                     f"Predictions on recent cohorts may experience temporal distribution drift."
                 )
 
-            # Engineer features using model's original module
-            raw_df = pd.DataFrame([payload])
+            # Ensure clean payload with exact RAW_COLS
+            raw_cols = getattr(self.sf, "RAW_COLS", [
+                'homepage_url', 'category_list', 'funding_total_usd', 'country_code', 'state_code',
+                'region', 'city', 'funding_rounds', 'founded_at', 'first_funding_at', 'last_funding_at'
+            ])
+            clean_payload = {k: payload.get(k) for k in raw_cols}
+            
+            raw_df = pd.DataFrame([clean_payload])
             feats = self.sf.engineer_features(raw_df)
 
             # Native prediction
@@ -89,7 +119,7 @@ class ModelAAdapter(BaseModelAdapter):
             outcome_label = "Operating / Acquired / IPO" if pred == 1 else "Closed"
 
             # Feature importances
-            feat_names = self.clf.feature_names_
+            feat_names = list(self.clf.feature_names_)
             importances = self.clf.get_feature_importance()
             sorted_idx = importances.argsort()[::-1][:5]
             top_factors = [
