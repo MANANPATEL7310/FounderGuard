@@ -1,7 +1,6 @@
 """Model A Adapter: Startup Outcome Classifier."""
 import time
 import pickle
-import types
 from pathlib import Path
 from typing import Any, Dict, Optional, Tuple
 import pandas as pd
@@ -11,11 +10,6 @@ from backend.config import MODEL_A_MAX_TRAINING_YEAR
 from backend.schemas.envelope import ModelEnvelope
 
 class ModelAAdapter(BaseModelAdapter):
-    # Typed as Any / ModuleType so Pyrefly does not infer NoneType from __init__
-    bundle: Any
-    clf: Any
-    sf: types.ModuleType
-
     def __init__(self) -> None:
         super().__init__("model_a", "Startup Outcome Classifier")
         self.bundle: Any = None
