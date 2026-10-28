@@ -29,3 +29,18 @@ This file records key architectural, engineering, and product decisions made dur
   2. **Scoped Commits:** Code within each step will be committed with descriptive conventional commit messages.
   3. **Verification Before Merge:** The entire test suite must pass before a branch is considered ready.
   4. **Step Completion:** Upon passing the "done when" criteria, the step's branch can be merged to `main` (or reviewed by user) before starting the next step.
+
+---
+
+## Decision 003: Model A Architecture and Input Contracts
+
+- **Date:** 2026-10-28
+- **Status:** Accepted
+- **Context:** Empirically verified Model A characteristics in Step 0.
+- **Findings & Decisions:**
+  1. **Bundle Structure:** `startup_outcome_classifier.pkl` is a dictionary bundle containing `['model', 'model_name', 'raw_columns', 'feature_columns']`. The model is `catboost.core.CatBoostClassifier`.
+  2. **Class Meaning:** `classes_ = [0, 1]` where 0 represents Closed/Failure and 1 represents Operating/Active/Success (Acquired/IPO/Operating).
+  3. **Input Features:** 11 raw columns mapped to 17 engineered features (12 numeric + 5 categorical).
+  4. **Pre-funding & Non-US Behavior:**
+     - Pre-funding ideas run without crashing (CatBoost native NaN support + `funding_missing=1.0`), yielding 52.2% Closed / 47.8% Operating.
+     - Non-US startups run without crashing (location imputed to `'missing'`, country retained).

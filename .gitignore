@@ -1,2 +1,10 @@
 /Planning
 
+.venv/
+.uv_python/
+.uv_cache/
+__pycache__/
+*.pyc
+.DS_Store
+material/datasets/
+Material/datasets/

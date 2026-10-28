@@ -1,0 +1,298 @@
+{
+  "manifest_version": "1.0",
+  "environment": {
+    "python": "3.11.15",
+    "libraries": {
+      "scikit-learn": "1.6.1",
+      "numpy": "2.1.3",
+      "pandas": "3.1.0",
+      "torch": "2.14.1",
+      "joblib": "1.6.0",
+      "catboost": "1.2.10",
+      "scipy": "1.17.1"
+    }
+  },
+  "models": {
+    "model_a": {
+      "id": "model_a",
+      "name": "Startup Outcome Classifier",
+      "model_type": "CatBoostClassifier",
+      "version": "v1",
+      "folder": "models/model_a/v1",
+      "files": [
+        {
+          "name": "startup_outcome_classifier.pkl",
+          "format": "pkl",
+          "loader": "pickle",
+          "sha256": "3b03500fe0dbd8b4fcbf1457e4980d06b1a01cfadc3f7b09d208f55cb0042265"
+        },
+        {
+          "name": "startup_features.py",
+          "format": "py",
+          "loader": "python_module",
+          "sha256": "2ab15b04116328ed5fd1f466bfa11114f91d0364eef6ef9b3398b4cf762e6d8d"
+        }
+      ],
+      "dataset_provenance": "Kaggle big_startup_secsees_dataset.csv (Crunchbase dataset, 66,368 startups)",
+      "target_definition": "Binary classification: 0 = Closed, 1 = Operating/Acquired/IPO (Active/Success)",
+      "class_labels": [0, 1],
+      "input_schema": {
+        "raw_columns": [
+          "homepage_url",
+          "category_list",
+          "funding_total_usd",
+          "country_code",
+          "state_code",
+          "region",
+          "city",
+          "funding_rounds",
+          "founded_at",
+          "first_funding_at",
+          "last_funding_at"
+        ],
+        "feature_columns": [
+          "funding_rounds",
+          "funding_total",
+          "funding_total_log",
+          "funding_missing",
+          "funding_per_round",
+          "founded_year",
+          "first_funding_year",
+          "last_funding_year",
+          "years_to_first_funding",
+          "funding_span_years",
+          "n_categories",
+          "has_homepage",
+          "country_code",
+          "state_code",
+          "region",
+          "city",
+          "primary_category"
+        ]
+      },
+      "output_schema": {
+        "prediction": "int (0 or 1)",
+        "probabilities": "list of float [P(Closed), P(Operating/Success)]"
+      },
+      "limitations": [
+        "Historical Crunchbase snapshot; data ends before recent macroeconomic cycles.",
+        "Pre-funding ideas receive missing flags and lean towards Closed due to lack of track record.",
+        "Founding years and funding spans far outside training distributions may introduce temporal drift."
+      ]
+    },
+    "model_b": {
+      "id": "model_b",
+      "name": "LogisticRegression + Platt calibration",
+      "model_type": "CalibratedClassifierCV (LogisticRegression)",
+      "version": "v1",
+      "folder": "models/model_b/v1",
+      "files": [
+        {
+          "name": "model_b_failure_risk.joblib",
+          "format": "joblib",
+          "loader": "joblib",
+          "sha256": "a4271fe4ca2c48b7f66be9b6ff7b856fdb1e34b6741ab31d111d214403b6fe3c"
+        },
+        {
+          "name": "model_b_inference.py",
+          "format": "py",
+          "loader": "python_module",
+          "sha256": "657a490d70adf42499b6158a5107f3a3778b7e350b1c7e11d78a33964a01c4b0"
+        },
+        {
+          "name": "model_b_metadata.json",
+          "format": "json",
+          "loader": "json",
+          "sha256": "997b800ceab0115e4bec1b248f289e6ded0c3171575470d701443087ef12282c"
+        }
+      ],
+      "dataset_provenance": "Kaggle startup dataset (startup data.csv), 922 US startups founded 1984-2013, status closed/acquired.",
+      "target_definition": "Failure Risk Score = 100 x calibrated P(closed rather than acquired) among funded US startups.",
+      "metrics": {
+        "roc_auc": 0.7232,
+        "pr_auc": 0.6651,
+        "brier": 0.2066,
+        "log_loss": 0.6014,
+        "ECE": 0.0908,
+        "accuracy@0.5": 0.6796,
+        "F1@0.5": 0.6094
+      },
+      "input_schema": {
+        "required_fields": [
+          "category_code",
+          "state_code",
+          "funding_total_usd",
+          "funding_rounds",
+          "has_VC",
+          "has_angel",
+          "has_roundA",
+          "has_roundB",
+          "has_roundC",
+          "has_roundD"
+        ]
+      },
+      "output_schema": {
+        "failure_probability": "float (0.0 to 1.0)",
+        "risk_score": "float (0.0 to 100.0)",
+        "risk_level": "str ('Low', 'Moderate', 'High', 'Very High')",
+        "meaning": "str",
+        "top_contributing_features": "list of objects with feature, value, effect_on_probability, direction",
+        "model": "str",
+        "test_metrics": "dict",
+        "warnings": "list of str"
+      },
+      "limitations": [
+        "No still-operating startups: model separates closed from acquired, not failed from surviving.",
+        "US-only, data ends in 2013; does not transfer reliably to non-US jurisdictions.",
+        "Only funded startups (funding_total_usd > 0, funding_rounds >= 1); pre-funding ideas are not applicable."
+      ]
+    },
+    "model_c": {
+      "id": "model_c",
+      "name": "Model C - PyTorch BiGRU+attention text encoder + rule-based aspect findings",
+      "model_type": "PyTorch BiGRU with Attention Pooling",
+      "version": "v1",
+      "folder": "models/model_c/v1",
+      "files": [
+        {
+          "name": "model_c_encoder.pt",
+          "format": "pt",
+          "loader": "torch",
+          "sha256": "2d2c36d018f1bc76443024636daac89e8be523e0a4f509cf6a9e1f82e833269f"
+        },
+        {
+          "name": "model_c_inference.py",
+          "format": "py",
+          "loader": "python_module",
+          "sha256": "038d0e1c20ff094d0a4580215da134b956d008594c4bd7f1790972a4b44a0367"
+        },
+        {
+          "name": "model_c_metadata.json",
+          "format": "json",
+          "loader": "json",
+          "sha256": "5711af89c9317b0b69daf224a0f3bb9d78c9defe598c38b728b8e67fff3cf965"
+        }
+      ],
+      "dataset_provenance": "venturematch_startups_10k_enriched_ckpt .csv: 10,000 startup pitch records; 10 sector classes.",
+      "target_definition": "Sector consistency check, text aspect coverage evaluation, and embedding similarity retrieval.",
+      "metrics": {
+        "accuracy": 0.8613,
+        "macro_f1": 0.8518,
+        "nll_calibrated": 0.4675,
+        "ece_calibrated": 0.0235
+      },
+      "input_schema": {
+        "idea_text": "str (free-text pitch / idea description)",
+        "declared_sector": "str (optional declared sector)",
+        "extra": "dict of str (optional: problem, target_customer, business_model, validation_evidence, competitors, traction)"
+      },
+      "output_schema": {
+        "provided_fields": "list of str",
+        "sector_check": "dict with declared_sector, predicted_top_sectors, consistent, note",
+        "nn_confidence": "float",
+        "key_terms_attended_by_nn": "list of str",
+        "aspect_findings": "list of dicts with key, aspect, status, evidence, note, question",
+        "strengths": "list of dicts",
+        "potential_weaknesses_and_gaps": "list of dicts",
+        "missing_information_questions": "list of dicts",
+        "vague_terms": "list of str",
+        "similar_startups": "list of dicts with similarity, sector, text",
+        "similarity_note": "str",
+        "warnings": "list of str",
+        "validation_status": "dict",
+        "limitations": "list of str"
+      },
+      "limitations": [
+        "Produces NO predictive success/failure score.",
+        "Training texts are short, templated pitches; longer real pitches are out-of-distribution.",
+        "Aspect findings are regex/heuristic rules; 'not stated' does not mean an aspect is weak.",
+        "Similarity retrieval does not constitute a competitor search."
+      ]
+    },
+    "model_d": {
+      "id": "model_d",
+      "name": "Model D - Failure Category Classifier (multilabel)",
+      "model_type": "LogisticRegression Calibrated Multilabel with LSA Encoder",
+      "version": "v1",
+      "folder": "models/model_d/v1",
+      "files": [
+        {
+          "name": "case_embeddings.npy",
+          "format": "npy",
+          "loader": "numpy",
+          "sha256": "8f7ce18cac05a69ada793d9b345ed6dad4ccaaacbcf36cb73f0743e18e501d48"
+        },
+        {
+          "name": "cases.csv",
+          "format": "csv",
+          "loader": "pandas",
+          "sha256": "07111e9cc2b82de1ba2cd8ee2feac87853045125aa401e82fe62ace7583b8a39"
+        },
+        {
+          "name": "label_config.json",
+          "format": "json",
+          "loader": "json",
+          "sha256": "27ef4c6495d2423260902cc03ccc7ec45cac5eb2088f20e71f73fbf8f0d743b9"
+        },
+        {
+          "name": "model_d_classifier.joblib",
+          "format": "joblib",
+          "loader": "joblib",
+          "sha256": "8d01c63058c224d42fc64feb0a04ca3f42423d91c5ddf70a538132ca02344572"
+        },
+        {
+          "name": "model_d_inference.py",
+          "format": "py",
+          "loader": "python_module",
+          "sha256": "bcb8e212b2f9ef4f090e3aca5181e3965deae5a96c0fd9783695ff543c0f6e1a"
+        },
+        {
+          "name": "model_d_metadata.json",
+          "format": "json",
+          "loader": "json",
+          "sha256": "da5526d3618a03c1f7a18e4d5e60a9353047b49d369d17d59ee57e728ce4e9f7"
+        }
+      ],
+      "dataset_provenance": "startup-failures.csv: 1,028 raw failure stories from ideaproof.io, 741 modelled rows.",
+      "target_definition": "Multilabel failure category probabilities calibrated against historical post-mortems.",
+      "categories": [
+        "market_demand",
+        "funding_cashflow",
+        "competition_differentiation",
+        "unit_economics_pricing",
+        "acquisition_retention",
+        "team_operations",
+        "weak_business_model",
+        "product_market_fit"
+      ],
+      "metrics": {
+        "original_text": {
+          "macro_roc_auc": 0.8838,
+          "macro_avg_precision": 0.7009,
+          "micro_f1": 0.6818,
+          "samples_f1": 0.6847,
+          "subset_accuracy": 0.3649,
+          "hamming_loss": 0.1301
+        }
+      },
+      "input_schema": {
+        "text": "str (free-text description of startup, challenges, and plan)",
+        "top_k_cases": "int (default 3)"
+      },
+      "output_schema": {
+        "model": "str ('D')",
+        "categories": "list of dicts (category, label, supported, probability, threshold, predicted, label_quality, evidence_sentence, similar_historical_failures)",
+        "predicted_categories": "list of str",
+        "warnings": "list of str",
+        "ood": "dict with flagged, nearest_case_similarity, threshold",
+        "note": "str",
+        "meaning": "str"
+      },
+      "limitations": [
+        "Labels are derived from heuristic regex rules on failure post-mortems, not verified clinical ground truth.",
+        "Predictions represent thematic similarity to historical failure stories, not certainty that the startup will fail.",
+        "Short texts (<20 words) or texts far from failure vocabulary trigger out-of-distribution warnings."
+      ]
+    }
+  }
+}
