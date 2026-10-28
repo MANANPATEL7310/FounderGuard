@@ -44,3 +44,24 @@ This file records key architectural, engineering, and product decisions made dur
   4. **Pre-funding & Non-US Behavior:**
      - Pre-funding ideas run without crashing (CatBoost native NaN support + `funding_missing=1.0`), yielding 52.2% Closed / 47.8% Operating.
      - Non-US startups run without crashing (location imputed to `'missing'`, country retained).
+
+---
+
+## Decision 004: Model A Applicability, Required Date Rules & Year-Shift Sensitivity
+
+- **Date:** 2026-10-28
+- **Status:** Accepted
+- **Context:** Project owner confirmed requirements for Model A execution in Step 1.
+- **Decisions Established:**
+  1. **Pre-funding Applicability (Option A):** Model A is strictly **Not Applicable** when `funding_total_usd == 0` or `funding_rounds == 0`.
+  2. **Field Requirements for Model A:**
+     - `homepage_url`, `city`, and `region` are optional.
+     - `founded_at`, `first_funding_at`, and `last_funding_at` are strictly required for Model A to run. If any of these three dates is missing, Model A is marked **Not Applicable** with reason: `"dates missing"`. No date imputation is performed.
+  3. **Temporal Boundary & Trust Panel Warning:**
+     - Training data analysis of `big_startup_secsees_dataset.csv` in `Material/notebooks/ml-model-a.ipynb` confirmed that the 99th percentile and effective upper bound of training years is **2015** (December 2015).
+     - Startups with `founded_year`, `first_funding_year`, or `last_funding_year` > 2015 are passed through to the model, and a prominent warning is attached to the Trust Panel notifying the user of temporal distribution drift.
+  4. **Year-Shift Sensitivity Test Results (2012 vs 2024):**
+     - Identical startup profile evaluated (\$2.0M funding, 2 rounds, CA/SF Bay Area, Software/AI):
+       - **2012 Cohort (In-Distribution):** `P(Closed) = 0.2980`, `P(Operating/Success) = 0.7020`
+       - **2024 Cohort (Temporal Shift):** `P(Closed) = 0.2174`, `P(Operating/Success) = 0.7826`
+       - **Observed Drift:** $\Delta P(\text{Operating/Success}) = +0.0806$ (+8.06%). Later years artificially lean slightly toward active/success due to right-censoring in Crunchbase data (companies founded more recently had fewer calendar years to fail before the snapshot date).
