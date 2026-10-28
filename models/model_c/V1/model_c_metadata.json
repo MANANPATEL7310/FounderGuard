@@ -1,0 +1,80 @@
+{
+  "model_name": "Model C - PyTorch BiGRU+attention text encoder (sector-supervised) + rule-based aspect findings",
+  "purpose": "Extract text signals from a startup idea description. Produces NO predictive quality score.",
+  "data_provenance": "venturematch_startups_10k_enriched_ckpt .csv: 10000 startup pitch records (short, templated, apparently synthetic); no outcome or quality labels.",
+  "supervised_target": "sector (10 classes). business_model and stage deliberately not used (near-chance predictability from text).",
+  "inputs_used": [
+    "pitch",
+    "elevator_speech (company name masked, boilerplate removed)"
+  ],
+  "inputs_excluded": [
+    "ask_usd",
+    "ARR",
+    "BURN_RATE",
+    "VALUE",
+    "stage",
+    "business_model",
+    "keywords",
+    "text_profile",
+    "competitors_count (check only)"
+  ],
+  "split": {
+    "method": "StratifiedGroupKFold grouped by identical cleaned text",
+    "n_train": 7144,
+    "n_val": 1428,
+    "n_test": 1428
+  },
+  "config": {
+    "max_len": 64,
+    "chunk_tokens": 48,
+    "emb_dim": 128,
+    "hidden": 128,
+    "embed_dim": 128,
+    "dropout": 0.3
+  },
+  "temperature": 1.0048,
+  "test_metrics": {
+    "accuracy": 0.8613,
+    "macro_f1": 0.8518,
+    "nll_calibrated": 0.4675,
+    "ece_calibrated": 0.0235,
+    "accuracy_95ci": [
+      0.843,
+      0.878
+    ],
+    "baseline_tfidf_lr_accuracy": 0.8452
+  },
+  "similarity_signal_validated": false,
+  "similarity_vs_competitors_count": {
+    "spearman_rho": 0.0114,
+    "p_value": 0.5423386711375568,
+    "n": 2844
+  },
+  "oov_rate": {
+    "train": 0.004,
+    "val": 0.007,
+    "test": 0.008
+  },
+  "rule_engine": {
+    "aspects": [
+      "Problem clarity",
+      "Target customer clarity",
+      "Solution specificity",
+      "Market need / validation evidence",
+      "Differentiation from competitors",
+      "Business model clarity",
+      "Feasibility / execution challenges",
+      "Evidence of customer demand"
+    ],
+    "validated": false,
+    "note": "Transparent regex/lexicon rules; only sanity-tested that they behave as written."
+  },
+  "limitations": [
+    "No outcome or aspect-quality labels exist in the training data, so no predictive idea-quality score is produced.",
+    "Training texts are short (about 14 words), templated and apparently synthetic; real founder descriptions are out-of-distribution.",
+    "Aspect findings are unvalidated rules; 'not stated' is not evidence of weakness.",
+    "Text alone cannot establish market demand.",
+    "Sector labels come from the dataset and cover only 10 sectors.",
+    "Similarity retrieval uses only training-corpus startups and is not a competitor analysis."
+  ]
+}

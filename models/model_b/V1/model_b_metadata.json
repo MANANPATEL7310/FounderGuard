@@ -1,0 +1,239 @@
+{
+  "model_name": "LogisticRegression + Platt calibration",
+  "target_definition": "failure = 1 if status == 'closed', 0 if status == 'acquired'. No time horizon. All startups in the data are closed or acquired.",
+  "score_meaning": "Risk Score = 100 x calibrated P(closed rather than acquired) among funded US startups in the training data. A relative risk estimate - NOT a probability of failure within a specific number of years.",
+  "features_used": [
+    "category_code",
+    "state_group",
+    "log_funding_total",
+    "funding_rounds",
+    "funding_per_round",
+    "has_VC",
+    "has_angel",
+    "has_roundA",
+    "has_roundB",
+    "has_roundC",
+    "has_roundD",
+    "n_investor_types",
+    "highest_round"
+  ],
+  "categorical_features": [
+    "category_code",
+    "state_group"
+  ],
+  "numeric_features": [
+    "log_funding_total",
+    "funding_rounds",
+    "funding_per_round",
+    "has_VC",
+    "has_angel",
+    "has_roundA",
+    "has_roundB",
+    "has_roundC",
+    "has_roundD",
+    "n_investor_types",
+    "highest_round"
+  ],
+  "excluded_for_leakage": [
+    "relationships",
+    "milestones",
+    "age_first_milestone_year",
+    "age_last_milestone_year",
+    "age_first_funding_year",
+    "age_last_funding_year",
+    "avg_participants",
+    "is_top500"
+  ],
+  "split": {
+    "train": "founded <= 2005",
+    "calibration": "2006-2007",
+    "test": "founded >= 2008",
+    "n_train": 427,
+    "n_cal": 211,
+    "n_test": 284
+  },
+  "calibration": "Platt scaling (sigmoid) fitted on the calibration slice",
+  "risk_levels": {
+    "Low": "<25",
+    "Moderate": "25-50",
+    "High": "50-75",
+    "Very High": ">=75"
+  },
+  "test_metrics": {
+    "roc_auc": 0.7232,
+    "pr_auc": 0.6651,
+    "brier": 0.2066,
+    "log_loss": 0.6014,
+    "ECE": 0.0908,
+    "accuracy@0.5": 0.6796,
+    "F1@0.5": 0.6094
+  },
+  "test_roc_auc_95ci": [
+    0.66,
+    0.782
+  ],
+  "validation_table": [
+    {
+      "model": "LogisticRegression",
+      "val_roc_auc": 0.7081,
+      "val_pr_auc": 0.6046,
+      "val_log_loss": 0.5751,
+      "val_brier": 0.1972
+    },
+    {
+      "model": "RandomForest",
+      "val_roc_auc": 0.6907,
+      "val_pr_auc": 0.5824,
+      "val_log_loss": 0.6142,
+      "val_brier": 0.214
+    },
+    {
+      "model": "CatBoost",
+      "val_roc_auc": 0.6425,
+      "val_pr_auc": 0.561,
+      "val_log_loss": 0.6464,
+      "val_brier": 0.2246
+    }
+  ],
+  "known_categories": [
+    "advertising",
+    "biotech",
+    "enterprise",
+    "games_video",
+    "hardware",
+    "mobile",
+    "network_hosting",
+    "other",
+    "public_relations",
+    "security",
+    "semiconductor",
+    "software",
+    "web"
+  ],
+  "known_states": [
+    "AR",
+    "AZ",
+    "CA",
+    "CO",
+    "CT",
+    "DC",
+    "FL",
+    "GA",
+    "IL",
+    "IN",
+    "KY",
+    "MA",
+    "MD",
+    "ME",
+    "MI",
+    "MN",
+    "MO",
+    "NC",
+    "NJ",
+    "NY",
+    "OH",
+    "OR",
+    "PA",
+    "TX",
+    "VA",
+    "WA",
+    "WI",
+    "WV"
+  ],
+  "train_funding_range_usd": [
+    50000.0,
+    5700000000.0
+  ],
+  "reference_values": {
+    "log_funding_total": 7.261262868792493,
+    "funding_rounds": 2.0,
+    "funding_per_round": 6.92309907414292,
+    "has_VC": 0.0,
+    "has_angel": 0.0,
+    "has_roundA": 0.0,
+    "has_roundB": 1.0,
+    "has_roundC": 0.0,
+    "has_roundD": 0.0,
+    "n_investor_types": 0.0,
+    "highest_round": 2.0,
+    "category_code": "software",
+    "state_group": "CA"
+  },
+  "permutation_importance": [
+    {
+      "feature": "log_funding_total",
+      "importance_mean": 0.2745,
+      "importance_std": 0.0271
+    },
+    {
+      "feature": "highest_round",
+      "importance_mean": 0.0255,
+      "importance_std": 0.0088
+    },
+    {
+      "feature": "has_roundA",
+      "importance_mean": 0.0148,
+      "importance_std": 0.0064
+    },
+    {
+      "feature": "state_group",
+      "importance_mean": 0.0134,
+      "importance_std": 0.0101
+    },
+    {
+      "feature": "category_code",
+      "importance_mean": 0.0068,
+      "importance_std": 0.0133
+    },
+    {
+      "feature": "has_VC",
+      "importance_mean": 0.0038,
+      "importance_std": 0.0035
+    },
+    {
+      "feature": "funding_rounds",
+      "importance_mean": 0.0034,
+      "importance_std": 0.006
+    },
+    {
+      "feature": "has_angel",
+      "importance_mean": 0.0023,
+      "importance_std": 0.0136
+    },
+    {
+      "feature": "has_roundD",
+      "importance_mean": 0.0003,
+      "importance_std": 0.0006
+    },
+    {
+      "feature": "funding_per_round",
+      "importance_mean": 0.0001,
+      "importance_std": 0.0091
+    },
+    {
+      "feature": "has_roundC",
+      "importance_mean": -0.0002,
+      "importance_std": 0.0004
+    },
+    {
+      "feature": "has_roundB",
+      "importance_mean": -0.0007,
+      "importance_std": 0.0004
+    },
+    {
+      "feature": "n_investor_types",
+      "importance_mean": -0.0032,
+      "importance_std": 0.001
+    }
+  ],
+  "data_provenance": "Kaggle startup dataset (startup data.csv), 922 US startups founded 1984-2013, status closed/acquired.",
+  "limitations": [
+    "No still-operating startups: model separates closed from acquired, not failed from surviving.",
+    "No observation-end dates: no defined prediction horizon, so no 'within N years' claim.",
+    "US-only, data ends in 2013; may not transfer to other countries or current markets.",
+    "Funding total/rounds/round flags are cumulative to the snapshot date; residual leakage is possible.",
+    "Only funded startups are represented; pre-funding ideas are out-of-distribution.",
+    "Later cohorts are right-censored (less time to close), so the test closed rate may be understated.",
+    "Risk level thresholds (25/50/75) are a convention, not learned from data."
+  ]
+}

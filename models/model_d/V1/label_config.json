@@ -1,0 +1,58 @@
+{
+  "category_names": {
+    "market_demand": "Lack of market demand",
+    "funding_cashflow": "Funding and cash-flow problems",
+    "competition_differentiation": "Strong competition or weak differentiation",
+    "unit_economics_pricing": "Poor unit economics or pricing",
+    "acquisition_retention": "Customer acquisition and retention difficulties",
+    "team_operations": "Team, skills, or operational problems",
+    "weak_business_model": "Weak business model",
+    "product_market_fit": "Product-market fit problems"
+  },
+  "rules": {
+    "market_demand": [
+      "(?:no|lack\\s+of|insufficient|weak|little|limited|low)\\s+(?:real\\s+|market\\s+|customer\\s+|consumer\\s+)?demand",
+      "demand\\s+(?:collapse\\w*|evaporat\\w*|decline\\w*|drop\\w*|cool\\w*|never|fell|dried|was\\s+(?:weak|limited|insufficient))",
+      "post-?covid\\s+demand|pandemic\\s+(?:tailwind|boom|demand)",
+      "nobody\\s+(?:wanted|needed|would\\s+pay)|no\\s+one\\s+(?:wanted|needed|would\\s+pay)|no\\s+buyers|no\\s+market\\b",
+      "market\\s+(?:was\\s+)?too\\s+small|small\\s+market|never\\s+materiali[sz]ed|market\\s+never",
+      "didn'?t\\s+(?:need|want)\\s+it|no\\s+(?:real\\s+)?need\\b|\\bhype\\b|\\bfad\\b",
+      "critical\\s+mass|cold[- ]start|consumer\\s+inertia|premature\\s+market|(?:bad|poor|wrong)\\s+(?:market\\s+)?timing|timing\\s+was\\s+(?:wrong|off|bad)|too\\s+niche|niche\\s+market\\s+(?:was\\s+)?too\\s+small|(?:failed|unable)\\s+to\\s+(?:reach|achieve)\\s+(?:scale|traction)"
+    ],
+    "funding_cashflow": [
+      "cash[\\s-]*(?:burn\\w*|crunch|crisis|flow|shortage)|burn\\s+rate|ran\\s+out\\s+of\\s+(?:cash|money|runway|funding|capital)|run\\s+out\\s+of|(?:short|limited|insufficient|little)\\s+runway|runway\\s+(?:ran\\s+out|was\\s+(?:too\\s+)?short|ended)",
+      "(?:could\\s*n[o']t|couldn'?t|unable\\s+to|failed\\s+to)\\s+(?:raise|secure\\s+(?:funding|financing|capital))",
+      "funding\\s+(?:dried|freeze|winter|crunch|gap|shortfall|collapse)|capital\\s+(?:tightened|dried|crunch|markets)|tight(?:ened|ening)?\\s+capital|raise\\s+more\\s+capital|down\\s+round|credit\\s+crunch",
+      "chapter\\s+(?:7|11)|bankrupt\\w*|insolven\\w*|liquidity\\s+(?:crisis|problems?|issues?|crunch|shortage)|(?:heavy|crushing|mounting|excessive)\\s+debt|debt\\s+(?:burden|load|pile|crisis|default)|too\\s+much\\s+debt|couldn'?t\\s+service|capital[- ]intensive|heavy\\s+capex|capex\\s+(?:burden|too\\s+high)"
+    ],
+    "competition_differentiation": [
+      "(?<!\\bno\\s)(?<!\\bwithout\\s)(?<!\\bfew\\s)(?<!\\blittle\\s)compet\\w*|outspent|out-?spent|undercut\\w*|incumbent\\w*|commodit\\w*|winner[- ]take[- ]all|consolidat\\w*|crowded|copycat|\\bclones?\\b|differentiat\\w*|price\\s+war|squeezed\\s+out|asphyxiat\\w*|lost\\s+(?:market\\s+)?share|overtaken"
+    ],
+    "unit_economics_pricing": [
+      "unit\\s+economics|economics\\s+(?:broke|broken|collapse\\w*|never|didn'?t|couldn'?t|unworkable)|(?:broken|bad|poor|negative|unsustainable|unviable)\\s+(?:\\w+\\s+)?economics",
+      "(?:thin|low|negative|poor|shrinking|slim|razor-thin|eroding)\\s+margins?|margins?\\s+(?:were|was|too|eroded|collapsed|squeezed)|margin\\s+compression|unprofitab\\w*|(?:never|not|no)\\s+(?:\\w+\\s+){0,2}profitab\\w*|cost\\s+(?:structure|to\\s+serve|of\\s+(?:goods|delivery|fulfil\\w*))|\\bcogs\\b|too\\s+expensive|subsidi[sz]\\w*|(?:heavy|deep|steep|excessive|aggressive)\\s+discount\\w*",
+      "(?:wrong|poor|bad|low|unsustainable)\\s+pricing|pricing\\s+(?:problems?|issues?|pressure|mistakes?)|price\\s+(?:cut|point|sensitiv\\w*)|flat[- ]fee\\s+(?:pricing\\s+)?(?:didn'?t|couldn'?t|failed)|couldn'?t\\s+cover|inventory\\s+(?:economics|costs?)"
+    ],
+    "acquisition_retention": [
+      "customer\\s+acquisition|user\\s+acquisition|acquisition\\s+costs?|\\bcac\\b|cost\\s+of\\s+acquir\\w*|churn\\w*|retention|(?:failed|unable|struggl\\w*)\\s+to\\s+retain\\w*|retaining\\s+(?:users|customers)|re-?engage\\w*|(?:low|poor|weak|declining|falling)\\s+(?:user\\s+)?engagement|engagement\\s+(?:was\\s+)?(?:low|poor|weak|declin\\w*|dropp\\w*|fell)",
+      "marketing\\s+(?:spend|costs?|budget)|paid\\s+(?:acquisition|marketing|growth)|ad\\s+spend|growth\\s+(?:stall\\w*|stagnat\\w*|plateau\\w*|slow\\w*)|stopped\\s+growing|(?:slow|stalled|stagnant|weak|poor)\\s+user\\s+growth|user\\s+growth\\s+(?:stalled|slowed|stagnated|plateaued)|(?:slow|low|poor|weak|limited)\\s+adoption|adoption\\s+(?:was\\s+)?(?:slow|low|poor|weak|stalled|limited)|long\\s+sales\\s+cycles?|(?:poor|weak|failed|flawed)\\s+(?:go-to-market|gtm)\\w*|(?:go-to-market|gtm)\\s+(?:failure|problems?|issues?)|lead\\s+generation|low\\s+conversion"
+    ],
+    "team_operations": [
+      "founder\\w*\\s+(?:conflict|dispute|infight\\w*|issues?|exit\\w*|depart\\w*|fraud|convicted|left|clash\\w*|feud\\w*|misconduct|resign\\w*)|co-?founder\\s+(?:conflict|dispute|split|exit)|infighting|in-fighting",
+      "(?:poor|weak|bad)\\s+(?:management|leadership|governance|execution)|mismanag\\w*|governance|misconduct|fraud\\w*|scandal|convicted|embezzl\\w*|executive\\s+(?:turnover|exodus|departure)",
+      "premature\\s+scaling|scal(?:ed|ing)\\s+too\\s+(?:fast|quickly|early)|over-?expan\\w*|over-?hir\\w*|hired\\s+too|operational\\s+(?:issues?|problems?|complexity|failures?|challenges?)|execution\\s+(?:failure|problems?|issues?|risk)|logistics\\s+(?:problems?|issues?|challenges?|failures?|complexity)|supply\\s+chain\\s+(?:problems?|issues?|disruptions?|failures?|challenges?|complexity)|burn(?:ed|t)\\s+out|lack\\s+of\\s+(?:experience|expertise|technical)"
+    ],
+    "weak_business_model": [
+      "(?:flawed|broken|weak|unproven|unsustainable|unclear|wrong|bad|poor|failed|fragile)\\s+(?:\\w+\\s+){0,2}(?:business|revenue)\\s+model|(?:business|revenue)\\s+model\\s+(?:was|were|never|didn'?t|couldn'?t|broke|failed|flawed|unproven|unsustainable|wasn'?t)|(?:unable|failed|struggl\\w*)\\s+to\\s+monetiz\\w*|monetiz\\w*\\s+(?:problems?|issues?|challenges?|failed|difficult\\w*)|no\\s+(?:clear\\s+)?(?:business|revenue)\\s+model",
+      "(?:model|approach)\\s+(?:broke|collapsed?|unworkable|unproven|unsustainable|unviable|flawed|failed|never\\s+\\w+|couldn'?t|wasn'?t|didn'?t)",
+      "(?:unsustainable|unviable|flawed|broken|unproven|unworkable|fragile)\\s+(?:\\w+\\s+){0,2}(?:model|approach|strategy)",
+      "no\\s+(?:clear\\s+)?path\\s+to\\s+(?:profit\\w*|revenue|monetiz\\w*)|strategic\\s+(?:misalignment|drift|missteps?)|(?:forced|had|needed|failed|kept|continued)\\s+to\\s+pivot\\w*|pivot(?:ed)?\\s+(?:several|multiple|repeatedly|too\\s+many|again)|failed\\s+pivot|pivot\\w*\\s+(?:failed|didn'?t)|aggregator\\s+model|marketplace\\s+(?:model|liquidity)|never\\s+had\\s+liquidity|ad-subsidi[sz]ed|platform\\s+(?:dependence|dependency|risk)|(?:rent-to-own|flat-fee|cash-offer|home-visit)\\s+model"
+    ],
+    "product_market_fit": [
+      "product[- ]market[- ]fit|\\bpmf\\b|never\\s+found\\s+(?:a\\s+)?(?:fit|market|niche)|(?:couldn'?t|failed\\s+to|never)\\s+find\\s+(?:a\\s+)?(?:fit|product[- ]market)",
+      "solution\\s+in\\s+search|technology\\s+(?:in|looking)\\s+(?:search|for)|(?:wrong|unwanted|undifferentiated)\\s+product|product\\s+(?:never|didn'?t|wasn'?t|failed|couldn'?t)",
+      "over-?promised|under-?delivered|never\\s+(?:produced|shipped|delivered|reached)\\s+(?:\\w+\\s+){0,3}(?:scale|market|commercial\\w*|customers)|too\\s+early|ahead\\s+of\\s+(?:its|their)\\s+time|premature\\s+(?:technology|product)",
+      "(?:didn'?t|did\\s+not|failed\\s+to)\\s+solve|no\\s+(?:real\\s+)?problem|(?:product[- ]market|market|customer)\\s+mismatch|mismatch\\s+between\\s+(?:the\\s+)?(?:product|market|customers?)|(?:customers|users)\\s+(?:didn'?t|did\\s+not|never)\\s+(?:want|need|adopt|care)"
+    ]
+  }
+}

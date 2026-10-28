@@ -1,0 +1,121 @@
+{
+  "model": "Model D - Failure Category Classifier (multilabel)",
+  "created_utc": "2026-10-28T02:51:28",
+  "provenance": {
+    "dataset_file": "startup-failures.csv",
+    "source_url_column_domain": "ideaproof.io",
+    "rows_raw": 1028,
+    "rows_after_cleaning": 1028,
+    "rows_modelled": 741,
+    "training_text": "failure_reason + lesson",
+    "label_method": "regex weak labels, rule set v2 with qualified patterns (see label_config.json)",
+    "all_rows_are_failed_startups": true
+  },
+  "split": {
+    "method": "GroupShuffleSplit by company name",
+    "seed": 31,
+    "test_size": 0.2,
+    "train_rows": 593,
+    "test_rows": 148
+  },
+  "modelled_categories": [
+    "market_demand",
+    "funding_cashflow",
+    "competition_differentiation",
+    "unit_economics_pricing",
+    "acquisition_retention",
+    "team_operations",
+    "weak_business_model",
+    "product_market_fit"
+  ],
+  "not_modelled_categories": [],
+  "hyperparameters": {
+    "encoder_kind": "lsa",
+    "encoder_source": "LSA(TF-IDF 1-2gram + TruncatedSVD, dim=256)",
+    "encoder_fallback_reason": "Internet is OFF and no local copy of the encoder was found",
+    "embed_model": null,
+    "C": 0.3,
+    "class_weight": "balanced",
+    "mask_augmentation": true,
+    "cv_folds": 5
+  },
+  "rule_audit": {
+    "reviewed_file": null,
+    "precision_by_category": {},
+    "low_precision_categories": [],
+    "min_rule_precision": 0.7
+  },
+  "ood_guard": {
+    "method": "cosine similarity to nearest training case, 5th percentile of held-out texts",
+    "sim_threshold": 0.36051103472709656,
+    "reference": {
+      "p05": 0.3605,
+      "p50": 0.5025,
+      "p95": 0.7006
+    }
+  },
+  "thresholds": {
+    "market_demand": 0.36,
+    "funding_cashflow": 0.35,
+    "competition_differentiation": 0.44,
+    "unit_economics_pricing": 0.55,
+    "acquisition_retention": 0.22,
+    "team_operations": 0.36,
+    "weak_business_model": 0.28,
+    "product_market_fit": 0.48
+  },
+  "test_metrics_original": {
+    "micro_f1": 0.6818,
+    "macro_f1": 0.5902,
+    "samples_f1": 0.6847,
+    "macro_avg_precision": 0.7009,
+    "macro_roc_auc": 0.8838,
+    "hamming_loss": 0.1301,
+    "subset_accuracy": 0.3649
+  },
+  "test_metrics_keyword_masked": {
+    "micro_f1": 0.4836,
+    "macro_f1": 0.3898,
+    "samples_f1": 0.4763,
+    "macro_avg_precision": 0.4183,
+    "macro_roc_auc": 0.7111,
+    "hamming_loss": 0.2128,
+    "subset_accuracy": 0.1757
+  },
+  "per_category_test_f1_original": {
+    "market_demand": 0.3871,
+    "funding_cashflow": 0.6988,
+    "competition_differentiation": 0.8393,
+    "unit_economics_pricing": 0.866,
+    "acquisition_retention": 0.359,
+    "team_operations": 0.7857,
+    "weak_business_model": 0.2857,
+    "product_market_fit": 0.5
+  },
+  "per_category_test_f1_masked": {
+    "market_demand": 0.3243,
+    "funding_cashflow": 0.5238,
+    "competition_differentiation": 0.7009,
+    "unit_economics_pricing": 0.6173,
+    "acquisition_retention": 0.2941,
+    "team_operations": 0.5424,
+    "weak_business_model": 0.1154,
+    "product_market_fit": 0.0
+  },
+  "note_on_metrics": "Test metrics come from the model fitted on the train split only; the saved model is re-fitted on all rows.",
+  "limitations": [
+    "Labels are rule-derived weak labels, not human annotations; metrics measure agreement with the rules.",
+    "Training text is post-mortem narratives of failed startups; user input is forward-looking, so a domain shift exists.",
+    "All training rows are failures: the model cannot estimate whether a startup will fail.",
+    "Outputs are predicted risk themes, not confirmed causes.",
+    "Regulatory, macro and acquisition-driven failures are outside the 8-category taxonomy.",
+    "Probabilities are calibrated against weak labels on out-of-fold data; small categories give noisy calibration.",
+    "The weak-label rules have NOT been audited by a human: rule precision is unknown, so test metrics only show agreement with the rules.",
+    "The offline fallback encoder (TF-IDF + SVD) was used because the sentence encoder could not be loaded; it captures wording rather than meaning, so re-run with Internet ON or the MiniLM model attached for better generalisation."
+  ],
+  "library_versions": {
+    "sklearn": "1.6.1",
+    "numpy": "2.1.3",
+    "pandas": "2.3.3"
+  }
+}
