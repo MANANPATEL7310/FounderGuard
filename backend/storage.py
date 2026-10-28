@@ -19,6 +19,7 @@ class EvaluationStorage:
                 "normalized": normalized,
                 "envelopes": {},
                 "report": None,
+                "recommendations": None,
                 "error": None,
             }
             self._evaluations[eval_id] = record
@@ -45,6 +46,11 @@ class EvaluationStorage:
                 self._evaluations[eval_id]["status"] = status
                 self._evaluations[eval_id]["stage"] = "complete"
                 self._evaluations[eval_id]["completed_at"] = datetime.now(timezone.utc).isoformat()
+
+    def update_recommendations(self, eval_id: str, recommendations: Any) -> None:
+        with self._lock:
+            if eval_id in self._evaluations:
+                self._evaluations[eval_id]["recommendations"] = recommendations
 
     def set_failed(self, eval_id: str, error_msg: str) -> None:
         with self._lock:

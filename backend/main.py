@@ -13,10 +13,12 @@ from backend.normalization.industry import AVAILABLE_INDUSTRIES
 from backend.normalization.locations import SUPPORTED_COUNTRIES, US_STATES
 from backend.normalization.normalizer import Normalizer
 from backend.orchestrator import Orchestrator
+from backend.recommendations.engine import RecommendationEngine
 from backend.recommender_stub import get_recommendations_stub
 from backend.registry import registry
 from backend.report_builder import ReportBuilder
 from backend.schemas.options import OptionsResponse
+from backend.schemas.recommendation import RecommendationResponse
 from backend.schemas.report import EvaluationReport, EvaluationStatusResponse
 from backend.schemas.submission import (
     NormalizedSummary,
@@ -140,6 +142,10 @@ def _process_evaluation(eval_id: str, normalized: Dict[str, Any], created_at: st
         envelopes = Orchestrator.run_all_models(normalized)
         report = ReportBuilder.build_report(eval_id, normalized, envelopes, created_at)
         storage.update_envelopes_and_report(eval_id, envelopes, report)
+
+        # Step 3: Generate prioritized recommendations from playbook fallback
+        recs = RecommendationEngine.generate(eval_id, normalized, envelopes, report)
+        storage.update_recommendations(eval_id, recs)
     except Exception as e:
         logger.error(f"Error processing evaluation {eval_id}: {e}", exc_info=True)
         storage.set_failed(eval_id, str(e))
@@ -207,13 +213,30 @@ def get_evaluation_report(eval_id: str):
 
     return rec["report"]
 
-# Recommendations Stub
-@app.get("/v1/evaluations/{eval_id}/recommendations", tags=["Evaluations"])
+# Prioritized Recommendations Endpoint
+@app.get("/v1/evaluations/{eval_id}/recommendations", response_model=RecommendationResponse, tags=["Evaluations"])
 def get_evaluation_recommendations(eval_id: str):
     rec = storage.get(eval_id)
     if not rec:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Evaluation not found")
-    return get_recommendations_stub(eval_id)
+
+    stored_recs = rec.get("recommendations")
+    if stored_recs:
+        return stored_recs
+
+    # If report is ready but recommendations not yet cached, generate deterministically
+    if rec.get("status") in ("report_ready", "complete") and rec.get("report") and rec.get("envelopes"):
+        recs = RecommendationEngine.generate(eval_id, rec["normalized"], rec["envelopes"], rec["report"])
+        storage.update_recommendations(eval_id, recs)
+        return recs
+
+    # Otherwise return empty response while still running
+    return RecommendationResponse(
+        evaluation_id=eval_id,
+        status="running",
+        is_fallback=True,
+        recommendations=[],
+    )
 
 # Delete Evaluation
 @app.delete("/v1/evaluations/{eval_id}", tags=["Evaluations"])

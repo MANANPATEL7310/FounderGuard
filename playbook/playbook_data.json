@@ -1,0 +1,223 @@
+[
+  {
+    "id": "pb_cust_discovery_01",
+    "theme": "validation_evidence",
+    "title": "Continuous Problem Discovery & Discovery Interviews",
+    "stages": ["idea", "validation", "MVP"],
+    "action": "Conduct 20–30 structured problem discovery interviews with target buyers without pitching the solution.",
+    "implementation_steps": [
+      "Define an exact screener targeting your ideal customer profile (title, industry, company size).",
+      "Draft an interview guide focused on past behaviors and current painful workarounds (following 'The Mom Test').",
+      "Reach out to 50–80 prospects via cold outreach, alumni networks, or specialized online communities.",
+      "Conduct 20–30 recorded 20-minute interviews, documenting quantitative pain points and existing software spend.",
+      "Synthesize patterns into an evidence log of recurring workflow bottlenecks and willingness-to-pay triggers."
+    ],
+    "expected_benefit": "Validates whether the identified problem is acute enough to command urgent software budget, preventing wasted development cycles.",
+    "validation_method": "Metric: >= 60% of interviewees report the problem causes weekly friction and describe a costly current workaround. Target: 20 interviews completed within 3 weeks.",
+    "assumptions": ["Founders can access 30 target stakeholders via direct professional networks or outbound outreach."]
+  },
+  {
+    "id": "pb_landing_page_smoke_01",
+    "theme": "market_demand",
+    "title": "Smoke-Test Landing Page & Pre-Sale Demand Test",
+    "stages": ["idea", "validation"],
+    "action": "Launch a single-page value proposition smoke test with a clear call-to-action to quantify real organic demand.",
+    "implementation_steps": [
+      "Build a focused landing page highlighting the core value proposition, key features, and realistic pricing tiers.",
+      "Include a high-intent conversion action: 'Request Early Access' with a qualification survey or refundable pre-order deposit.",
+      "Drive 300–500 targeted visitors via niche ad campaigns ($100–$250 budget) or targeted organic community posts.",
+      "Track conversion funnel metrics from landing to email submission and survey completion.",
+      "Interview high-intent submitters within 48 hours to assess readiness to adopt upon release."
+    ],
+    "expected_benefit": "Generates quantitative signal on click-through and signup intent from real prospects before writing production code.",
+    "validation_method": "Metric: Call-to-action conversion rate >= 5% from targeted organic or paid traffic within 14 days.",
+    "assumptions": ["A concise landing page can accurately convey the value proposition to non-technical users."]
+  },
+  {
+    "id": "pb_concierge_mvp_01",
+    "theme": "product_market_fit",
+    "title": "Concierge or Wizard-of-Oz MVP Execution",
+    "stages": ["idea", "validation", "MVP"],
+    "action": "Deliver the core service manually behind the scenes for 3–5 early design partners before automating software.",
+    "implementation_steps": [
+      "Identify 3 friendly design partners facing the immediate workflow problem.",
+      "Agree on a weekly operational cadence where founders manually perform the data extraction or orchestration service.",
+      "Use off-the-shelf tools (spreadsheets, Zapier, email triggers) rather than custom engineered backends.",
+      "Gather direct user feedback at every execution touchpoint to uncover edge cases and manual friction.",
+      "Identify the exact 20% of features that create 80% of partner delight to prioritize for the software roadmap."
+    ],
+    "expected_benefit": "Uncovers real-world operational complexities and proves end-to-end user value with near-zero software capital expenditure.",
+    "validation_method": "Metric: >= 3 design partners complete a full weekly workflow and confirm they would be disappointed if the service ceased. Timeframe: 30 days.",
+    "assumptions": ["Founders possess the domain and manual capacity to deliver service manually for 3 to 5 clients."]
+  },
+  {
+    "id": "pb_competitor_matrix_01",
+    "theme": "competition_differentiation",
+    "title": "Competitive Wedge & Asymmetric Differentiation Mapping",
+    "stages": ["idea", "validation", "MVP", "launched", "growing"],
+    "action": "Map legacy alternatives and define a clear, defensible single-dimensional wedge where incumbent solutions fail.",
+    "implementation_steps": [
+      "List the top 5 direct competitors, indirect substitutes, and status quo workflows (including Excel and manual staff).",
+      "Review competitor negative reviews (G2, Capterra, Trustpilot) to identify systemic customer grievances.",
+      "Define 1 primary differentiator (e.g. 10x faster implementation, domain-native compliance, radically lower TCO).",
+      "Test this specific wedge pitch against 10 prospective buyers currently using an incumbent tool.",
+      "Refine marketing positioning and sales collateral to articulate why alternatives fail on this critical vector."
+    ],
+    "expected_benefit": "Protects against being outcompeted by enterprise incumbents by focusing sales efforts strictly on their blind spots.",
+    "validation_method": "Metric: >= 40% of surveyed prospects identify your specific differentiator as a compelling reason to evaluate an alternative within 21 days.",
+    "assumptions": ["Incumbents have identifiable gaps in speed, UX, modern integrations, or pricing flexibility."]
+  },
+  {
+    "id": "pb_pricing_wtp_01",
+    "theme": "unit_economics_pricing",
+    "title": "Value-Based Pricing Discovery & Van Westendorp Survey",
+    "stages": ["validation", "MVP", "launched", "growing"],
+    "action": "Run pricing sensitivity tests with target customers to establish floor, target, and ceiling price points aligned with ROI.",
+    "implementation_steps": [
+      "Quantify the monetary value delivered by the solution (hours saved multiplied by employee hourly wage, or direct cost reduction).",
+      "Implement the 4-question Van Westendorp Price Sensitivity Meter with 15–20 qualified prospects.",
+      "Establish tiered packages (Starter, Professional, Enterprise) with clear value metric fences (per seat, per transaction, per usage).",
+      "Present pricing upfront in customer pilot negotiations to test willingness to commit real budget.",
+      "Establish gross margin targets of >= 75% for software components after infrastructure and API vendor costs."
+    ],
+    "expected_benefit": "Avoids underpricing software, establishes healthy initial gross margins, and aligns pricing metric directly with customer value.",
+    "validation_method": "Metric: At least 2 pilot customers agree to a paid contract or signed LOI with explicit dollar amounts within 30 days.",
+    "assumptions": ["Customers have authority or discretionary budget to approve pilot software purchases."]
+  },
+  {
+    "id": "pb_unit_economics_01",
+    "theme": "unit_economics_pricing",
+    "title": "Contribution Margin & Customer Acquisition Payback Audit",
+    "stages": ["MVP", "launched", "growing"],
+    "action": "Calculate fully-loaded Customer Acquisition Cost (CAC) and customer Lifetime Value (LTV) to ensure positive unit economics.",
+    "implementation_steps": [
+      "Audit all acquisition spend: ad budgets, software tools, sales commissions, and prorated founder sales hours.",
+      "Calculate blended and paid CAC across distinct acquisition channels.",
+      "Measure monthly gross margin per active customer after direct operational, server, and customer support costs.",
+      "Determine the CAC Payback Period (target: < 12 months for SMB, < 18 months for Enterprise).",
+      "Kill or restructure marketing channels where CAC payback exceeds 18 months."
+    ],
+    "expected_benefit": "Prevents premature scaling and cash burn on acquisition channels that yield negative contribution margins.",
+    "validation_method": "Metric: LTV / CAC ratio projected >= 3.0x with CAC payback <= 12 months calculated over 60 days.",
+    "assumptions": ["Startup has sufficient sales conversion and cost tracking data to measure channel performance."]
+  },
+  {
+    "id": "pb_acquisition_test_01",
+    "theme": "acquisition_retention",
+    "title": "Systematic Channel Testing (Bullseye Framework)",
+    "stages": ["MVP", "launched", "growing"],
+    "action": "Run rapid, constrained traction experiments across 3 distinct distribution channels to discover a repeatable engine.",
+    "implementation_steps": [
+      "Brainstorm ideas across 5 potential channels (content SEO, cold outbound email, LinkedIn ads, partnerships, community).",
+      "Select the top 3 highest-probability channels based on where target buyers congregate.",
+      "Set a strict budget cap ($300–$500 per channel) and time cap (14 days) per channel sprint.",
+      "Measure Cost Per Lead (CPL) and Lead-to-Opportunity conversion for each channel.",
+      "Double down on the single channel demonstrating the highest conversion velocity and pause underperforming ones."
+    ],
+    "expected_benefit": "Identifies a scalable customer acquisition channel early, replacing ad-hoc marketing with a repeatable acquisition process.",
+    "validation_method": "Metric: At least 1 channel generates qualified demo requests at a sustainable acquisition cost within 30 days.",
+    "assumptions": ["Target customers have recognizable digital habits and can be reached via targeted channels."]
+  },
+  {
+    "id": "pb_retention_cohort_01",
+    "theme": "acquisition_retention",
+    "title": "Cohort Retention Curve & Churn Driver Diagnosis",
+    "stages": ["MVP", "launched", "growing"],
+    "action": "Track weekly and monthly user retention curves to verify that the product flattens into a stable retention baseline.",
+    "implementation_steps": [
+      "Define the core 'Aha!' moment and primary usage frequency (daily, weekly, monthly).",
+      "Plot cohort retention curves (Day 1, Day 7, Day 30) for successive user onboarding batches.",
+      "Conduct exit interviews with every churned customer within 24 hours of cancellation.",
+      "Categorize churn reasons into product bugs, lack of onboarding, missing integrations, or change of team priorities.",
+      "Implement product improvements specifically targeting the highest-frequency onboarding drop-off step."
+    ],
+    "expected_benefit": "Prevents the 'leaky bucket' syndrome where expensive acquisition is cancelled out by customer churn.",
+    "validation_method": "Metric: Net monthly revenue retention >= 95% and user retention curve flattens above 20% by month 2. Timeframe: 60 days.",
+    "assumptions": ["Active user event tracking is instrumented in the web or mobile product."]
+  },
+  {
+    "id": "pb_fundraising_runway_01",
+    "theme": "funding_cashflow",
+    "title": "Runway Extension & Milestones-Driven Capital Planning",
+    "stages": ["idea", "validation", "MVP", "launched", "growing"],
+    "action": "Build a rolling 18-month cashflow model and tie fundraising milestones directly to derisked product milestones.",
+    "implementation_steps": [
+      "Create a detailed zero-based monthly cashflow model showing fixed vs variable monthly burn rate.",
+      "Calculate current net runway in months (cash in bank divided by monthly net burn).",
+      "Identify 3 concrete valuation-inflection milestones (e.g. 10 paying customers, $15k MRR, key regulatory approval).",
+      "If runway is < 6 months, immediately institute burn reduction measures (defer non-critical hires, renegotiate vendor contracts).",
+      "Prepare institutional fundraising materials only after reaching clear milestone evidence."
+    ],
+    "expected_benefit": "Protects company solvency, prevents emergency bridge rounds on punitive terms, and aligns capital deployment with milestones.",
+    "validation_method": "Metric: Minimum 9 months of cash runway maintained at all times, with monthly burn variance within 10% of forecast.",
+    "assumptions": ["Founders track all bank accounts and monthly outflows with structured bookkeeping."]
+  },
+  {
+    "id": "pb_team_roles_01",
+    "theme": "team_operations",
+    "title": "Skills Gap Audit & Advisory Board Formation",
+    "stages": ["idea", "validation", "MVP", "launched", "growing"],
+    "action": "Map current founding team skill coverage against startup operational requirements and fill critical gaps via advisors.",
+    "implementation_steps": [
+      "Audit founder strengths across 4 pillars: Technical Engineering, Product Design, Sales/GTM, and Domain Operations.",
+      "Identify the single biggest operational blind spot (e.g. no enterprise sales experience, no regulatory/compliance knowledge).",
+      "Recruit 1–2 seasoned industry advisors offering 0.25%–0.5% advisory equity with explicit monthly hour commitments.",
+      "Schedule bi-weekly advisory reviews focused exclusively on overcoming that functional bottleneck.",
+      "Prioritize next full-time hire around the proven bottleneck once customer traction justifies expansion."
+    ],
+    "expected_benefit": "Mitigates operational missteps and accelerates sales by leveraging experienced domain veteran guidance.",
+    "validation_method": "Metric: Advisory agreement executed and bi-weekly advisory sprint cadence established within 30 days.",
+    "assumptions": ["Founders are willing to grant advisory equity in exchange for dedicated mentorship and warm introductions."]
+  },
+  {
+    "id": "pb_bizmodel_canvas_01",
+    "theme": "weak_business_model",
+    "title": "Business Model Canvas & Monetization Architecture",
+    "stages": ["idea", "validation", "MVP"],
+    "action": "Document and stress-test the complete business model mechanics: value proposition, cost structure, and revenue streams.",
+    "implementation_steps": [
+      "Complete a 1-page Lean Business Model Canvas documenting assumptions across all 9 blocks.",
+      "Explicitly identify the top 3 unverified assumptions that could invalidate the business model if false.",
+      "Design one focused experiment for each fatal assumption to be executed in sequence.",
+      "Evaluate gross margin feasibility: ensure revenue per transaction comfortably exceeds direct fulfillment and API costs.",
+      "Review pricing model options (subscription vs usage-based vs commission) to select the mechanism with the lowest customer adoption friction."
+    ],
+    "expected_benefit": "Transforms an abstract business idea into a coherent economic model with validated unit profitability.",
+    "validation_method": "Metric: All 9 blocks articulated with 0 unaddressed fatal assumptions and a confirmed unit margin model within 14 days.",
+    "assumptions": ["Founders can clearly define the unit economics of a single customer transaction."]
+  },
+  {
+    "id": "pb_idea_clarity_01",
+    "theme": "idea_clarity",
+    "title": "Elevator Pitch Simplification & Value Proposition Sharpening",
+    "stages": ["idea", "validation", "MVP"],
+    "action": "Rewrite and test the core value proposition statement using the high-clarity positioning framework.",
+    "implementation_steps": [
+      "Draft a single sentence using the standard positioning formula: 'We help [Target Buyer] achieve [Specific Desired Outcome] without [Common Pain/Friction] via [Unique Mechanism]'.",
+      "Remove all generic buzzwords (e.g. 'revolutionary', 'cutting-edge', 'AI-driven', 'disruptive') and replace with concrete metrics.",
+      "Test the statement with 10 non-industry acquaintances and ask them to explain what the company does in their own words.",
+      "Iterate the description until 9 out of 10 people accurately explain the product mechanism on their first attempt.",
+      "Update all landing page, pitch deck, and application text with the validated clear description."
+    ],
+    "expected_benefit": "Eliminates buyer and investor confusion, dramatically improving initial cold outreach and conversion rates.",
+    "validation_method": "Metric: >= 80% comprehension score in 10 blind reader tests completed within 7 days.",
+    "assumptions": ["Clear English phrasing can describe the core workflow without technical jargon."]
+  },
+  {
+    "id": "pb_pivot_framework_01",
+    "theme": "execution_hurdles",
+    "title": "Milestone-Gated Pivot Decision Framework",
+    "stages": ["validation", "MVP", "launched"],
+    "action": "Establish explicit falsifiable milestones with a structured decision timeline to prevent prolonged drift.",
+    "implementation_steps": [
+      "Define 2 quantitative go/no-go milestones to be reached within a fixed 60-day sprint (e.g. 3 paying pilots, 15% conversion).",
+      "Document the 3 potential pivot directions in advance: Customer Segment Pivot, Problem Pivot, or Feature-to-Product Pivot.",
+      "Review sprint performance weekly against the predetermined numerical threshold without moving the goalposts.",
+      "If milestones are missed after 60 days of diligent execution, convene founders to evaluate the pre-planned pivot directions.",
+      "Preserve remaining capital to fund 2 additional focused iteration sprints rather than running out of runway on dead leads."
+    ],
+    "expected_benefit": "Enables rapid, disciplined decision-making and prevents burning investor capital on non-viable product paths.",
+    "validation_method": "Metric: Clear written decision rubric with pre-committed milestone deadlines established within 7 days.",
+    "assumptions": ["Founders maintain objectivity and transparency regarding pilot engagement metrics."]
+  }
+]

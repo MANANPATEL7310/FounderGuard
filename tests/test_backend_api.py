@@ -126,10 +126,13 @@ def test_submit_and_fetch_report(client):
         "Elevated concern", "Mixed picture", "Lower concern, under-evidenced", "Insufficient basis"
     ]
 
-    # 3. Recommendations stub check
+    # 3. Recommendations check
     res_rec = client.get(f"/v1/evaluations/{eval_id}/recommendations")
     assert res_rec.status_code == 200
-    assert res_rec.json()["status"] == "coming_soon"
+    rec_body = res_rec.json()
+    assert rec_body["status"] == "complete"
+    assert rec_body["is_fallback"] is True
+    assert len(rec_body["recommendations"]) > 0
 
     # 4. Delete evaluation
     res_del = client.delete(f"/v1/evaluations/{eval_id}")

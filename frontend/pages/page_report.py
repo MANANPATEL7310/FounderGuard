@@ -317,28 +317,107 @@ def render(goto, start_over):
         st.info("Prioritized tactical recommendations are available in the **Recommendations** tab.")
 
     # ═════════════════════════════════════════════════════════════════════════════
-    # TAB 2: RECOMMENDATIONS (Step 3/4 Activation)
+    # TAB 2: RECOMMENDATIONS (Step 3: Template Playbook / Step 4: LLM)
     # ═════════════════════════════════════════════════════════════════════════════
     with tab_recs:
-        st.markdown("### 💡 Strategic Advisory & Playbook Recommendations")
-        st.info("🚧 **Recommendations Engine Coming Soon** (Step 3/4 Activation)")
-        st.markdown(
-            """
-            In the upcoming release, this section will generate:
-            - **Prioritized tactical action items** tailored specifically to the failure themes detected by Model D and gaps identified by Model C.
-            - **Implementation steps, expected benefits, and validation metrics** for each action.
-            - **Curated case studies from the startup failure playbook** matching your exact industry and operational stage.
-            - **Interactive clarification Q&A** allowing you to provide additional context and regenerate the recommendations.
-            """
-        )
+        st.markdown("### 💡 Prioritized Strategic Recommendations")
 
-        issues = report.get("issues", [])
-        if issues:
-            st.markdown(f"#### Identified Hurdle Candidates for Advisory ({len(issues)})")
-            for iss in issues:
+        # Fetch recommendations from backend
+        rec_data = api_client.get_recommendations(meta.get("evaluation_id", eval_id))
+
+        if not rec_data or not rec_data.get("recommendations"):
+            st.info("Recommendations are being generated or no recommendations available.")
+        else:
+            if rec_data.get("is_fallback"):
                 st.markdown(
-                    f"- **[{iss.get('source')}] {iss.get('title')}** *(Severity: {iss.get('severity')})*: {iss.get('evidence') or ''}"
+                    """
+                    <div style="border-left:4px solid #2196F3;background:#e3f2fd;padding:12px 16px;border-radius:4px;margin:12px 0 16px 0;">
+                        <strong>📋 Playbook Reference Recommendations (Template-Based)</strong><br>
+                        <span style="font-size:0.88rem;color:#444;">
+                            These recommendations are synthesized deterministically from our curated startup failure playbook
+                            using the prioritized risk signals from Models A, B, C, and D.
+                        </span>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
                 )
+
+            recs = rec_data.get("recommendations", [])
+
+            # Priority filter
+            prio_filter = st.radio("Filter by Priority:", ["All", "High", "Medium", "Low"], horizontal=True)
+            filtered_recs = [r for r in recs if prio_filter == "All" or r.get("priority") == prio_filter]
+
+            prio_colors = {
+                "High": ("🔴 High Priority", "#ffebee", "#c62828"),
+                "Medium": ("🟡 Medium Priority", "#fff8e1", "#f57f17"),
+                "Low": ("🟢 Low Priority", "#e8f5e9", "#2e7d32"),
+            }
+
+            st.write(f"Showing **{len(filtered_recs)}** of **{len(recs)}** prioritized recommendations:")
+
+            for r in filtered_recs:
+                p_label, p_bg, p_fg = prio_colors.get(r.get("priority", "Medium"), ("⚪ Priority", "#f5f5f5", "#333"))
+
+                with st.container():
+                    st.markdown(
+                        f"""
+                        <div style="background:{p_bg};border:1px solid #ddd;border-radius:8px;padding:16px;margin-bottom:12px;">
+                            <div style="display:flex;justify-content:space-between;align-items:center;">
+                                <span style="font-weight:700;font-size:1.1rem;color:#222;">{r.get('identified_problem_or_risk')}</span>
+                                <span style="background:{p_fg};color:white;padding:3px 10px;border-radius:12px;font-size:0.8rem;font-weight:600;">{p_label}</span>
+                            </div>
+                            <div style="font-size:0.92rem;color:#444;margin:8px 0 12px 0;">
+                                <b>Why it matters:</b> {r.get('why_it_matters_for_this_startup')}
+                            </div>
+                            <div style="background:white;padding:12px;border-radius:6px;border:1px solid #eee;margin-bottom:10px;">
+                                <b>Specific Action:</b> {r.get('specific_action')}
+                            </div>
+                        </div>
+                        """,
+                        unsafe_allow_html=True,
+                    )
+
+                    with st.expander(f"View Implementation Steps & Validation Method ({r.get('identified_problem_or_risk')})", expanded=False):
+                        st.markdown("**Implementation Steps:**")
+                        for s_idx, step in enumerate(r.get("implementation_steps", []), 1):
+                            st.markdown(f"{s_idx}. {step}")
+
+                        st.markdown(f"**Expected Benefit:** {r.get('expected_benefit')}")
+                        st.markdown(f"**Validation Metric & Target:** `{r.get('validation_method')}`")
+
+                        col_ref1, col_ref2 = st.columns(2)
+                        with col_ref1:
+                            st.caption(f"Evidence References: `{', '.join(r.get('evidence_refs', [])) or 'Input pitch'}`")
+                        with col_ref2:
+                            st.caption(f"Playbook References: `{', '.join(r.get('playbook_refs', []))}`")
+
+                        # Local action checklist
+                        action_key = f"action_done_{r.get('id')}"
+                        st.checkbox("Mark this action as completed in workplan", key=action_key)
+
+                    st.markdown("")
+
+            # Clarifying Questions Panel
+            questions = rec_data.get("clarifying_questions", [])
+            if questions:
+                st.markdown("---")
+                st.markdown(f"#### ❓ Clarifying Questions to Sharpen Context ({len(questions)})")
+                st.caption("Addressing these questions will provide additional context to validate key assumptions:")
+                for q in questions:
+                    st.markdown(f"- **{q.get('aspect', 'Context')}**: {q.get('question')}")
+                    if q.get("reason_it_matters"):
+                        st.caption(f"  *Why it matters:* {q.get('reason_it_matters')}")
+
+            # Assumptions & Disclaimers
+            assumptions = rec_data.get("assumptions", [])
+            if assumptions:
+                with st.expander("Recommendation Assumptions & Standing Disclaimer"):
+                    st.markdown("**Assumptions made during analysis:**")
+                    for asm in assumptions:
+                        st.markdown(f"- {asm}")
+                    st.markdown("---")
+                    st.caption(rec_data.get("disclaimer", ""))
 
     # ═════════════════════════════════════════════════════════════════════════════
     # TAB 3: TRUST & LIMITATIONS
