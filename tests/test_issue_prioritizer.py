@@ -271,3 +271,4 @@ def test_recommendation_engine_full_schema_consistency():
     # Clarifying questions attached
     assert len(resp.clarifying_questions) >= 1
     assert "interviews" in resp.clarifying_questions[0].question.lower()
+

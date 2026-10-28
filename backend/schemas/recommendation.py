@@ -49,3 +49,4 @@ class RecommendationResponse(BaseModel):
     other_observations: List[Dict[str, Any]] = Field(default_factory=list)
     clarifying_questions: List[ClarifyingQuestion] = Field(default_factory=list)
     assumptions: List[str] = Field(default_factory=list)
+

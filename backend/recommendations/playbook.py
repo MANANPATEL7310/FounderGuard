@@ -60,3 +60,4 @@ class PlaybookKnowledgeBase:
 
 # Singleton instance
 playbook_kb = PlaybookKnowledgeBase()
+

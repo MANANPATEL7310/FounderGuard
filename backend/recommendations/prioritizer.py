@@ -274,3 +274,4 @@ class IssuePrioritizer:
         ]
 
         return top_issues, other_obs
+
