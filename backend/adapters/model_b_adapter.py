@@ -1,11 +1,10 @@
 """Model B Adapter: Failure Risk Estimator."""
-import sys
 import time
 from pathlib import Path
 from typing import Any, Dict, Optional, Tuple
 import joblib
 
-from backend.adapters.base import BaseModelAdapter
+from backend.adapters.base import BaseModelAdapter, load_module_from_file
 from backend.schemas.envelope import ModelEnvelope
 
 class ModelBAdapter(BaseModelAdapter):
@@ -16,10 +15,8 @@ class ModelBAdapter(BaseModelAdapter):
 
     def load(self, artifact_dir: Path) -> None:
         p = Path(artifact_dir)
-        if str(p) not in sys.path:
-            sys.path.insert(0, str(p))
-        import model_b_inference as mb
-        self.mb = mb
+        # Load model_b_inference dynamically
+        self.mb = load_module_from_file("model_b_inference", p / "model_b_inference.py")
 
         joblib_path = p / "model_b_failure_risk.joblib"
         self.bundle = joblib.load(joblib_path)
@@ -66,7 +63,6 @@ class ModelBAdapter(BaseModelAdapter):
             )
 
         try:
-            # Ensure all required fields for model_b_inference.validate_input exist with sensible defaults
             clean_payload = {
                 "category_code": str(payload.get("category_code") or "other").lower(),
                 "state_code": str(payload.get("state_code") or "OTHER").upper(),

@@ -1,0 +1,17 @@
+{
+  "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
+  "python.analysis.extraPaths": [
+    "${workspaceFolder}",
+    "${workspaceFolder}/models/model_a/v1",
+    "${workspaceFolder}/models/model_b/v1",
+    "${workspaceFolder}/models/model_c/v1",
+    "${workspaceFolder}/models/model_d/v1"
+  ],
+  "python.autoComplete.extraPaths": [
+    "${workspaceFolder}",
+    "${workspaceFolder}/models/model_a/v1",
+    "${workspaceFolder}/models/model_b/v1",
+    "${workspaceFolder}/models/model_c/v1",
+    "${workspaceFolder}/models/model_d/v1"
+  ]
+}

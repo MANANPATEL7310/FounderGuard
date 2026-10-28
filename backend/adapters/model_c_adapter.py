@@ -1,10 +1,9 @@
 """Model C Adapter: PyTorch BiGRU Idea Evaluator & Aspect Extractor."""
-import sys
 import time
 from pathlib import Path
 from typing import Any, Dict, Optional, Tuple
 
-from backend.adapters.base import BaseModelAdapter
+from backend.adapters.base import BaseModelAdapter, load_module_from_file
 from backend.schemas.envelope import ModelEnvelope
 
 class ModelCAdapter(BaseModelAdapter):
@@ -15,13 +14,11 @@ class ModelCAdapter(BaseModelAdapter):
 
     def load(self, artifact_dir: Path) -> None:
         p = Path(artifact_dir)
-        if str(p) not in sys.path:
-            sys.path.insert(0, str(p))
-        import model_c_inference as mc
-        self.mc = mc
+        # Load model_c_inference dynamically
+        self.mc = load_module_from_file("model_c_inference", p / "model_c_inference.py")
 
         encoder_pt = p / "model_c_encoder.pt"
-        self.bundle = mc.load_bundle(str(encoder_pt))
+        self.bundle = self.mc.load_bundle(str(encoder_pt))
 
     def check_applicability(self, payload: Dict[str, Any]) -> Tuple[bool, Optional[str]]:
         if not payload or not isinstance(payload, dict):

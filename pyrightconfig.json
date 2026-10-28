@@ -1,0 +1,11 @@
+{
+  "venvPath": ".",
+  "venv": ".venv",
+  "extraPaths": [
+    ".",
+    "models/model_a/v1",
+    "models/model_b/v1",
+    "models/model_c/v1",
+    "models/model_d/v1"
+  ]
+}

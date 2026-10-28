@@ -1,12 +1,11 @@
 """Model A Adapter: Startup Outcome Classifier."""
-import sys
 import time
 import pickle
 from pathlib import Path
 from typing import Any, Dict, Optional, Tuple
 import pandas as pd
 
-from backend.adapters.base import BaseModelAdapter
+from backend.adapters.base import BaseModelAdapter, load_module_from_file
 from backend.config import MODEL_A_MAX_TRAINING_YEAR
 from backend.schemas.envelope import ModelEnvelope
 
@@ -19,10 +18,8 @@ class ModelAAdapter(BaseModelAdapter):
 
     def load(self, artifact_dir: Path) -> None:
         p = Path(artifact_dir)
-        if str(p) not in sys.path:
-            sys.path.insert(0, str(p))
-        import startup_features as sf
-        self.sf = sf
+        # Load startup_features dynamically
+        self.sf = load_module_from_file("startup_features", p / "startup_features.py")
 
         pkl_path = p / "startup_outcome_classifier.pkl"
         with open(pkl_path, "rb") as f:
@@ -106,7 +103,7 @@ class ModelAAdapter(BaseModelAdapter):
                 'region', 'city', 'funding_rounds', 'founded_at', 'first_funding_at', 'last_funding_at'
             ])
             clean_payload = {k: payload.get(k) for k in raw_cols}
-            
+
             raw_df = pd.DataFrame([clean_payload])
             feats = self.sf.engineer_features(raw_df)
 

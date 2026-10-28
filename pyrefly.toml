@@ -1,0 +1,17 @@
+python-interpreter-path = ".venv/bin/python"
+
+search-path = [
+  ".",
+  "models/model_a/v1",
+  "models/model_b/v1",
+  "models/model_c/v1",
+  "models/model_d/v1"
+]
+
+[errors]
+ignore-missing-imports = [
+  "startup_features",
+  "model_b_inference",
+  "model_c_inference",
+  "model_d_inference"
+]
