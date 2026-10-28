@@ -65,3 +65,30 @@ This file records key architectural, engineering, and product decisions made dur
        - **2012 Cohort (In-Distribution):** `P(Closed) = 0.2980`, `P(Operating/Success) = 0.7020`
        - **2024 Cohort (Temporal Shift):** `P(Closed) = 0.2174`, `P(Operating/Success) = 0.7826`
        - **Observed Drift:** $\Delta P(\text{Operating/Success}) = +0.0806$ (+8.06%). Later years artificially lean slightly toward active/success due to right-censoring in Crunchbase data (companies founded more recently had fewer calendar years to fail before the snapshot date).
+
+---
+
+## Decision 005: Streamlit Frontend Architecture and Flow
+
+- **Date:** 2026-10-28
+- **Status:** Accepted
+- **Context:** Step 2 Streamlit implementation (Planning file 03, plus 01 section 1.1, 02 sections 2.3 and 2.4).
+- **Architecture & Rules Established:**
+  1. **Page Flow State Machine:** Controlled via `st.session_state["page"]` and `st.session_state["step"]`:
+     `landing` -> `form` (steps 1 to 5) -> `review` (calls `/validate`) -> `processing` (polls status) -> `report` (renders full 8-section report) with an omnipresent `about` page.
+  2. **Zero Model Coupling in Frontend:** The frontend runs no models, maps no categories, and performs no currency conversion. All dropdown lists and constraints are fetched from `/v1/meta/options`.
+  3. **Word Meter:** Real-time character/word tracker on idea description with color-coded guidance (red under 40 words, amber 40-80, green 80+).
+  4. **Conditional Inputs:**
+     - US State is only shown if Country is USA.
+     - Funding rounds, investor types, and rounds reached are shown only if funding raised > 0.
+     - Founding and funding dates are optional in the form, but their absence cleanly triggers Model A's Not Applicable card.
+  5. **Review Page Verification:** Calls `POST /v1/evaluations/validate` to show the user which models will run, which will be skipped and why, the exact USD conversion, and warnings before submission.
+  6. **Report Visualizations:**
+     - Interpretation banner with distinct iconography and template explanation (never color alone).
+     - Model A outcome probabilities bar chart and target definition.
+     - Model B failure risk gauge/card with relative risk score (0-100), level badge, and meaning text.
+     - Model C 8 aspect dimension cards with status badges and quoted evidence sentences.
+     - Model D 8 failure category bars with evidence sentences, historical similarity, and out-of-distribution warning banner if flagged.
+     - Trust Panel with provenance tracking (provided vs unstated fields), currency conversion rates, and limitations.
+     - Recommendations tab showing "Coming Soon" placeholder for Step 3/4.
+     - Privacy controls: "Delete My Data" invoking `DELETE /v1/evaluations/{id}`.
