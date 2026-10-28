@@ -74,3 +74,4 @@ def render(goto):
                 st.json(catalog[m["id"]], expanded=False)
 
         st.markdown("---")
+
