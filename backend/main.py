@@ -17,7 +17,6 @@ from backend.normalization.locations import SUPPORTED_COUNTRIES, US_STATES
 from backend.normalization.normalizer import Normalizer
 from backend.orchestrator import Orchestrator
 from backend.recommendations.engine import RecommendationEngine
-from backend.recommender_stub import get_recommendations_stub
 from backend.registry import registry
 from backend.report_builder import ReportBuilder
 from backend.schemas.options import OptionsResponse
