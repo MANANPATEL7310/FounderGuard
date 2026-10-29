@@ -483,7 +483,7 @@ GOLDEN_CASES = [
     }
 ]
 
-@pytest.mark.parametrize("case", GOLDEN_CASES, ids=[c["id"] for c in GOLDEN_CASES])
+@pytest.mark.parametrize("case", GOLDEN_CASES, ids=[str(c["id"]) for c in GOLDEN_CASES])
 def test_golden_case(client, case):
     # 1. Validate endpoint check
     res_val = client.post("/v1/evaluations/validate", json=case["input"])

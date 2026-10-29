@@ -75,3 +75,4 @@ def test_concurrent_evaluations_load(client):
     for r in results:
         assert r["sections_count"] == 8
         assert r["recs_count"] > 0
+

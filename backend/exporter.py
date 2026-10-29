@@ -245,7 +245,7 @@ class ReportExporter:
             spaceAfter=15,
         )
 
-        story = []
+        story: list[Any] = []
 
         # 1. Header
         story.append(Paragraph("Startup Risk Evaluation & Advisory Report", title_style))

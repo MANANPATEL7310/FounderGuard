@@ -1,7 +1,7 @@
 """Operational metrics and request tracking implementing Section 4.10."""
 import threading
 import time
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 
 class OperationalMetrics:
@@ -45,7 +45,7 @@ class OperationalMetrics:
                 if len(self.model_latencies[model_id]) > 100:
                     self.model_latencies[model_id].pop(0)
 
-    def record_model_status(self, model_id: str, status: str, warnings: List[str] = None) -> None:
+    def record_model_status(self, model_id: str, status: str, warnings: Optional[List[str]] = None) -> None:
         with self._lock:
             if status == "not_applicable":
                 self.not_applicable_counts[model_id] = self.not_applicable_counts.get(model_id, 0) + 1
@@ -82,3 +82,4 @@ class OperationalMetrics:
 
 # Global metrics tracker singleton
 metrics = OperationalMetrics()
+

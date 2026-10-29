@@ -64,11 +64,11 @@ def run_evaluation() -> Dict[str, Any]:
     print(f"=======================================================\n")
 
     for idx, case in enumerate(cases):
-        case_id = case.get("id", f"case_{idx+1}")
+        case_id = str(case.get("id") or f"case_{idx+1}")
         payload = case.get("input", {})
 
         # 1. Normalize
-        sub_obj = SubmissionInput(**payload)
+        sub_obj = SubmissionInput.model_validate(payload)
         normalized, _ = Normalizer.normalize(sub_obj)
 
         # 2. Predict with adapters

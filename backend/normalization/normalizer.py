@@ -1,12 +1,12 @@
 """Input normalization pipeline and payload builder."""
 import re
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 from backend.normalization.currency import convert_to_usd
 from backend.normalization.industry import map_industry
 from backend.normalization.locations import normalize_location
 from backend.schemas.submission import SubmissionInput
 
-def clean_str(text: str) -> str:
+def clean_str(text: Optional[str]) -> str:
     """Strip HTML, markdown artifacts, and collapse whitespace."""
     if not text:
         return ""

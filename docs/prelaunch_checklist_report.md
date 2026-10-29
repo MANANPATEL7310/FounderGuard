@@ -19,3 +19,4 @@
 - **Uncertainty & Provenance:** Unstated fields are clearly labeled as omitted information, not negative evidence.
 - **Offline Execution:** Zero external network calls for model inference; all weights are bundled locally.
 - **Fault Tolerance:** Complete isolation of individual model errors and graceful fallback for LLM recommendations.
+- **Data Privacy:** Full right-to-erasure compliance verified via storage delete tests.

@@ -284,3 +284,4 @@ Every incoming request is tagged with an `X-Request-ID` and latency header (`X-P
 ## 📄 License & Attribution
 
 Internal Development & Proprietary Advisory Platform. Built for startup evaluation and risk analysis.
+

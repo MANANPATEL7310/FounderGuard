@@ -1,11 +1,12 @@
 """Unit tests for the Issue Prioritizer and priority rules (Section 5.4)."""
 import pytest
+from typing import Any, Dict, Literal, Optional
 from backend.recommendations.engine import RecommendationEngine
 from backend.recommendations.prioritizer import IssuePrioritizer
 from backend.schemas.envelope import ModelEnvelope
 
 
-def _make_envelope(model_id: str, status: str = "ok", data: dict = None) -> ModelEnvelope:
+def _make_envelope(model_id: str, status: Literal["ok", "not_applicable", "error"] = "ok", data: Optional[Dict[str, Any]] = None) -> ModelEnvelope:
     return ModelEnvelope(
         model_id=model_id,
         model_name=f"Test {model_id}",

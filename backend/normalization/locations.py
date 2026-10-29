@@ -1,5 +1,5 @@
 """Location lists, state mappings, and country codes."""
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
 
 SUPPORTED_COUNTRIES: List[Dict[str, str]] = [
     {"code": "USA", "name": "United States"},
@@ -31,7 +31,7 @@ US_STATES: List[Dict[str, str]] = [
 
 MODEL_B_MAJOR_STATES = {"CA", "NY", "MA", "TX"}
 
-def normalize_location(country: str, state: str = None) -> Tuple[str, str, str, bool]:
+def normalize_location(country: str, state: Optional[str] = None) -> Tuple[str, str, str, bool]:
     """
     Normalizes country and state.
     Returns (country_code, raw_state, model_b_state_group, is_us).

@@ -122,6 +122,10 @@ def test_adapter_edge_cases_and_null_safety():
     adapter_b = registry.get_adapter("model_b")
     adapter_c = registry.get_adapter("model_c")
     adapter_d = registry.get_adapter("model_d")
+    assert adapter_a is not None
+    assert adapter_b is not None
+    assert adapter_c is not None
+    assert adapter_d is not None
 
     # 1. Null / None payloads
     assert adapter_a.predict(None).status in ("not_applicable", "error")
