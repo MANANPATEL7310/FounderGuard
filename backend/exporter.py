@@ -5,10 +5,10 @@ from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 
 # ReportLab imports for PDF export
-from reportlab.lib import colors  # type: ignore
-from reportlab.lib.pagesizes import letter  # type: ignore
-from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet  # type: ignore
-from reportlab.platypus import HRFlowable, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle  # type: ignore
+from reportlab.lib import colors  # type: ignore # pyrefly: ignore[missing-source-for-stubs]
+from reportlab.lib.pagesizes import letter  # type: ignore # pyrefly: ignore[missing-source-for-stubs]
+from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet  # type: ignore # pyrefly: ignore[missing-source-for-stubs]
+from reportlab.platypus import HRFlowable, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle  # type: ignore # pyrefly: ignore[missing-source-for-stubs]
 
 
 class ReportExporter:
