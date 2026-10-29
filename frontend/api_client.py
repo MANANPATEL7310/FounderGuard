@@ -96,6 +96,33 @@ def delete_evaluation(eval_id: str) -> bool:
         return False
 
 
+# ── Clarifications ────────────────────────────────────────────────────────────
+def submit_clarifications(eval_id: str, answers: list[dict]) -> tuple[bool, dict]:
+    """Submits clarification answers to create a new linked version."""
+    try:
+        r = _post(f"/v1/evaluations/{eval_id}/clarifications", {"answers": answers})
+        if r.status_code == 202:
+            return True, r.json()
+        return False, r.json()
+    except requests.exceptions.ConnectionError:
+        return False, {"detail": "Cannot reach the backend."}
+    except Exception as e:
+        return False, {"detail": str(e)}
+
+
+# ── Export ────────────────────────────────────────────────────────────────────
+def export_report(eval_id: str, fmt: str = "json") -> tuple[bool, bytes, str]:
+    """Fetches export content from the backend (json, html, pdf)."""
+    try:
+        r = requests.get(_url(f"/v1/evaluations/{eval_id}/export?format={fmt}"), timeout=REQUEST_TIMEOUT)
+        if r.status_code == 200:
+            ctype = r.headers.get("Content-Type", "application/octet-stream")
+            return True, r.content, ctype
+        return False, b"", ""
+    except Exception:
+        return False, b"", ""
+
+
 # ── Backend health ────────────────────────────────────────────────────────────
 def check_backend_health() -> bool:
     try:

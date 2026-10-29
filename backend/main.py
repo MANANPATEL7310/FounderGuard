@@ -4,10 +4,11 @@ import uuid
 from contextlib import asynccontextmanager
 from typing import Any, Dict
 
-from fastapi import BackgroundTasks, FastAPI, HTTPException, status
+from fastapi import BackgroundTasks, FastAPI, HTTPException, Query, Response, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
+from backend.exporter import ReportExporter
 from backend.normalization.currency import EXCHANGE_RATES_USD
 from backend.normalization.industry import AVAILABLE_INDUSTRIES
 from backend.normalization.locations import SUPPORTED_COUNTRIES, US_STATES
@@ -21,6 +22,8 @@ from backend.schemas.options import OptionsResponse
 from backend.schemas.recommendation import RecommendationResponse
 from backend.schemas.report import EvaluationReport, EvaluationStatusResponse
 from backend.schemas.submission import (
+    ClarificationRequest,
+    ClarificationResponse,
     NormalizedSummary,
     SubmissionInput,
     SubmissionResponse,
@@ -139,13 +142,34 @@ def validate_submission(payload: SubmissionInput):
 # Background processing worker
 def _process_evaluation(eval_id: str, normalized: Dict[str, Any], created_at: str):
     try:
+        storage.set_stage(eval_id, "running_models", status="running")
         envelopes = Orchestrator.run_all_models(normalized)
-        report = ReportBuilder.build_report(eval_id, normalized, envelopes, created_at)
-        storage.update_envelopes_and_report(eval_id, envelopes, report)
 
-        # Step 3: Generate prioritized recommendations from playbook fallback
-        recs = RecommendationEngine.generate(eval_id, normalized, envelopes, report)
-        storage.update_recommendations(eval_id, recs)
+        # Failure handling: If every model failed completely, fail the evaluation cleanly
+        all_failed = all(env.status == "error" for env in envelopes.values())
+        if all_failed:
+            storage.set_failed(eval_id, "All analytical models failed to produce predictions.")
+            return
+
+        storage.set_stage(eval_id, "building_report")
+        report = ReportBuilder.build_report(eval_id, normalized, envelopes, created_at)
+        storage.update_envelopes_and_report(
+            eval_id, envelopes, report, status="report_ready", stage="generating_recommendations"
+        )
+
+        # Generate prioritized recommendations (LLM with playbook fallback)
+        try:
+            recs = RecommendationEngine.generate(eval_id, normalized, envelopes, report)
+        except Exception as llm_err:
+            logger.warning(f"Recommendation generation encountered error: {llm_err}. Using fallback.", exc_info=True)
+            recs = RecommendationResponse(
+                evaluation_id=eval_id,
+                status="complete",
+                generation_method="template_playbook",
+                is_fallback=True,
+                recommendations=[],
+            )
+        storage.update_recommendations(eval_id, recs, status="complete", stage="complete")
     except Exception as e:
         logger.error(f"Error processing evaluation {eval_id}: {e}", exc_info=True)
         storage.set_failed(eval_id, str(e))
@@ -161,7 +185,8 @@ def submit_evaluation(payload: SubmissionInput, background_tasks: BackgroundTask
 
     normalized, warnings = Normalizer.normalize(payload)
     eval_id = f"eval_{uuid.uuid4().hex[:12]}"
-    record = storage.create(eval_id, normalized)
+    raw_dict = payload.model_dump()
+    record = storage.create(eval_id, normalized, raw_submission=raw_dict, consent=payload.consent)
 
     # Enqueue background task
     background_tasks.add_task(_process_evaluation, eval_id, normalized, record["created_at"])
@@ -188,14 +213,19 @@ def get_evaluation_status(eval_id: str):
         else:
             per_model[m_id] = "pending" if rec["status"] in ("queued", "running") else "unavailable"
 
+    lineage = storage.get_lineage(eval_id)
+
     return EvaluationStatusResponse(
         evaluation_id=eval_id,
+        version=rec.get("version", 1),
+        parent_id=rec.get("parent_id"),
         status=rec["status"],
         stage=rec["stage"],
         created_at=rec["created_at"],
         completed_at=rec["completed_at"],
         per_model_status=per_model,
-        report_url=f"/v1/evaluations/{eval_id}/report" if rec["status"] == "report_ready" else None
+        report_url=f"/v1/evaluations/{eval_id}/report" if rec["status"] in ("report_ready", "complete") else None,
+        available_versions=lineage,
     )
 
 # Structured Report
@@ -205,7 +235,7 @@ def get_evaluation_report(eval_id: str):
     if not rec:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Evaluation not found")
 
-    if rec["status"] != "report_ready":
+    if rec["status"] not in ("report_ready", "complete"):
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail=f"Report is not ready yet (current status: {rec['status']})"
@@ -238,7 +268,106 @@ def get_evaluation_recommendations(eval_id: str):
         recommendations=[],
     )
 
-# Delete Evaluation
+# Clarification Loop: submit answers and create a new linked version
+@app.post("/v1/evaluations/{eval_id}/clarifications", response_model=ClarificationResponse, status_code=status.HTTP_202_ACCEPTED, tags=["Evaluations"])
+def submit_clarifications(eval_id: str, payload: ClarificationRequest, background_tasks: BackgroundTasks):
+    rec = storage.get(eval_id)
+    if not rec:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Parent evaluation not found")
+
+    answers = payload.answers
+    if not answers:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="At least one clarification answer is required")
+
+    # Construct updated raw submission & pitch
+    raw_sub = dict(rec.get("raw_submission", {}))
+    clarification_text = "\n\n[Clarifications Provided]:\n" + "\n".join([
+        f"- {a.aspect}: {a.answer}" for a in answers if a.answer.strip()
+    ])
+
+    orig_desc = raw_sub.get("idea_description") or rec["normalized"].get("idea_description", "")
+    raw_sub["idea_description"] = (orig_desc + clarification_text).strip()
+
+    # Update specific fields if the clarification provides details
+    for a in answers:
+        asp_lower = a.aspect.lower()
+        ans_val = a.answer.strip()
+        if "target customer" in asp_lower or "customer" in asp_lower:
+            raw_sub["target_customer"] = ans_val
+        elif "competitor" in asp_lower:
+            raw_sub["competitors"] = ans_val
+        elif "validation" in asp_lower or "traction" in asp_lower:
+            raw_sub["validation_evidence"] = ans_val
+
+    sub_input = SubmissionInput(**raw_sub)
+    normalized, _ = Normalizer.normalize(sub_input)
+
+    root_id = rec.get("root_id") or eval_id
+    next_version = rec.get("version", 1) + 1
+    new_eval_id = f"{root_id}_v{next_version}"
+
+    clarifications_dict = [a.model_dump() for a in answers]
+    new_record = storage.create_version(
+        parent_id=eval_id,
+        new_eval_id=new_eval_id,
+        normalized=normalized,
+        raw_submission=raw_sub,
+        clarifications=clarifications_dict,
+    )
+
+    if not new_record:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to initialize new version")
+
+    background_tasks.add_task(_process_evaluation, new_eval_id, normalized, new_record["created_at"])
+
+    return ClarificationResponse(
+        evaluation_id=new_eval_id,
+        parent_id=eval_id,
+        version=new_record["version"],
+        status="queued",
+        created_at=new_record["created_at"],
+        check_status_url=f"/v1/evaluations/{new_eval_id}",
+    )
+
+# Report Export Endpoint (HTML, JSON, PDF)
+@app.get("/v1/evaluations/{eval_id}/export", tags=["Evaluations"])
+def export_evaluation(eval_id: str, format: str = Query("json", pattern="^(json|html|pdf)$")):
+    rec = storage.get(eval_id)
+    if not rec:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Evaluation not found")
+
+    report = rec.get("report")
+    if not report or rec.get("status") not in ("report_ready", "complete"):
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Report is not ready for export (current status: {rec.get('status')})"
+        )
+
+    recommendations = rec.get("recommendations")
+
+    if format == "json":
+        content = ReportExporter.export_json(report, recommendations)
+        return Response(
+            content=content,
+            media_type="application/json",
+            headers={"Content-Disposition": f'attachment; filename="report_{eval_id}.json"'},
+        )
+    elif format == "html":
+        content = ReportExporter.export_html(report, recommendations)
+        return Response(
+            content=content,
+            media_type="text/html",
+            headers={"Content-Disposition": f'attachment; filename="report_{eval_id}.html"'},
+        )
+    elif format == "pdf":
+        content = ReportExporter.export_pdf(report, recommendations)
+        return Response(
+            content=content,
+            media_type="application/pdf",
+            headers={"Content-Disposition": f'attachment; filename="report_{eval_id}.pdf"'},
+        )
+
+# Delete Evaluation (Data Removal)
 @app.delete("/v1/evaluations/{eval_id}", tags=["Evaluations"])
 def delete_evaluation(eval_id: str):
     success = storage.delete(eval_id)

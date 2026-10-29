@@ -42,6 +42,41 @@ def render(goto, start_over):
         st.markdown("### Evaluation Actions")
         st.write(f"**ID:** `{meta.get('evaluation_id', eval_id)}`")
         st.write(f"**Completed:** {meta.get('completed_at', '—')[:19].replace('T', ' ')}")
+
+        # Lineage / Version Switcher (Section 3.8)
+        status_data = api_client.get_status(eval_id)
+        available_versions = status_data.get("available_versions", []) if status_data else []
+        if len(available_versions) > 1:
+            st.markdown("#### Evaluation Versions")
+            version_labels = {v["evaluation_id"]: f"v{v.get('version', 1)} ({v.get('evaluation_id')[-8:]})" for v in available_versions}
+            curr_idx = list(version_labels.keys()).index(eval_id) if eval_id in version_labels else 0
+            selected_v = st.selectbox(
+                "Select Version to View:",
+                options=list(version_labels.keys()),
+                format_func=lambda x: version_labels.get(x, x),
+                index=curr_idx,
+            )
+            if selected_v != eval_id:
+                st.session_state["eval_id"] = selected_v
+                st.session_state["report"] = None
+                st.rerun()
+
+        st.markdown("---")
+
+        # Export Controls (Section 3.9)
+        st.markdown("#### Export Report")
+        ok_json, json_bytes, _ = api_client.export_report(eval_id, "json")
+        if ok_json:
+            st.download_button("📄 Download JSON", data=json_bytes, file_name=f"report_{eval_id}.json", mime="application/json", use_container_width=True)
+
+        ok_html, html_bytes, _ = api_client.export_report(eval_id, "html")
+        if ok_html:
+            st.download_button("🌐 Download HTML", data=html_bytes, file_name=f"report_{eval_id}.html", mime="text/html", use_container_width=True)
+
+        ok_pdf, pdf_bytes, _ = api_client.export_report(eval_id, "pdf")
+        if ok_pdf:
+            st.download_button("📑 Download PDF", data=pdf_bytes, file_name=f"report_{eval_id}.pdf", mime="application/pdf", use_container_width=True)
+
         st.markdown("---")
 
         if st.button("➕ Start New Evaluation", use_container_width=True):
@@ -398,16 +433,52 @@ def render(goto, start_over):
 
                     st.markdown("")
 
-            # Clarifying Questions Panel
+            # Clarifying Questions & Clarification Loop (Section 3.8 & 5.11)
             questions = rec_data.get("clarifying_questions", [])
             if questions:
                 st.markdown("---")
-                st.markdown(f"#### ❓ Clarifying Questions to Sharpen Context ({len(questions)})")
-                st.caption("Addressing these questions will provide additional context to validate key assumptions:")
-                for q in questions:
-                    st.markdown(f"- **{q.get('aspect', 'Context')}**: {q.get('question')}")
-                    if q.get("reason_it_matters"):
-                        st.caption(f"  *Why it matters:* {q.get('reason_it_matters')}")
+                st.markdown(f"#### ❓ Clarifying Questions & Feedback Loop ({len(questions)})")
+                st.caption(
+                    "Addressing these questions creates a new linked version of your evaluation, "
+                    "re-evaluates narrative risk signals, and personalizes the recommendations."
+                )
+
+                with st.form(key=f"clarification_form_{eval_id}"):
+                    answers = []
+                    for idx, q in enumerate(questions[:5]):
+                        q_aspect = q.get("aspect", "Context")
+                        q_text = q.get("question", "")
+                        st.markdown(f"**{idx + 1}. [{q_aspect}]** {q_text}")
+                        if q.get("reason_it_matters"):
+                            st.caption(f"*{q.get('reason_it_matters')}*")
+                        ans_val = st.text_input(
+                            f"Your clarification for {q_aspect}:",
+                            key=f"q_input_{eval_id}_{idx}",
+                            placeholder="Provide metrics, details, or operational facts...",
+                            label_visibility="collapsed",
+                        )
+                        answers.append({
+                            "aspect": q_aspect,
+                            "question": q_text,
+                            "answer": ans_val,
+                        })
+
+                    st.markdown("")
+                    clarif_submitted = st.form_submit_button("Submit Clarifications & Generate New Version 🚀", use_container_width=True)
+
+                    if clarif_submitted:
+                        valid_answers = [a for a in answers if a["answer"].strip()]
+                        if not valid_answers:
+                            st.warning("Please provide at least one answer before submitting clarifications.")
+                        else:
+                            with st.spinner("Submitting clarifications and initiating re-evaluation..."):
+                                ok, resp = api_client.submit_clarifications(eval_id, valid_answers)
+                                if ok:
+                                    st.session_state["eval_id"] = resp["evaluation_id"]
+                                    st.session_state["report"] = None
+                                    goto("processing")
+                                else:
+                                    st.error(resp.get("detail", "Failed to submit clarifications."))
 
             # Assumptions & Disclaimers
             assumptions = rec_data.get("assumptions", [])
