@@ -1,14 +1,16 @@
 """FastAPI Backend Application."""
 import logging
+import time
 import uuid
 from contextlib import asynccontextmanager
 from typing import Any, Dict
 
-from fastapi import BackgroundTasks, FastAPI, HTTPException, Query, Response, status
+from fastapi import BackgroundTasks, FastAPI, HTTPException, Query, Request, Response, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from backend.exporter import ReportExporter
+from backend.metrics import metrics
 from backend.normalization.currency import EXCHANGE_RATES_USD
 from backend.normalization.industry import AVAILABLE_INDUSTRIES
 from backend.normalization.locations import SUPPORTED_COUNTRIES, US_STATES
@@ -58,6 +60,23 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Request ID & Observability Tracking Middleware (Section 4.10)
+@app.middleware("http")
+async def request_tracking_middleware(request: Request, call_next):
+    req_id = request.headers.get("X-Request-ID") or uuid.uuid4().hex[:8]
+    start_time = time.perf_counter()
+    response = await call_next(request)
+    duration_ms = (time.perf_counter() - start_time) * 1000
+    response.headers["X-Request-ID"] = req_id
+    response.headers["X-Response-Time-MS"] = f"{duration_ms:.2f}"
+    metrics.record_request(request.url.path, response.status_code)
+    return response
+
+# Metrics Endpoint (Section 4.10)
+@app.get("/v1/meta/metrics", tags=["Metadata"])
+def get_operational_metrics():
+    return metrics.get_summary()
 
 # Health & Readiness
 @app.get("/health", tags=["Health"])
@@ -145,6 +164,14 @@ def _process_evaluation(eval_id: str, normalized: Dict[str, Any], created_at: st
         storage.set_stage(eval_id, "running_models", status="running")
         envelopes = Orchestrator.run_all_models(normalized)
 
+        # Record metrics across models
+        for m_id, env in envelopes.items():
+            metrics.record_model_latency(m_id, env.runtime_ms)
+            metrics.record_model_status(m_id, env.status, env.warnings)
+        if envelopes.get("model_d") and envelopes["model_d"].data:
+            if envelopes["model_d"].data.get("ood", {}).get("flagged"):
+                metrics.record_ood_flag()
+
         # Failure handling: If every model failed completely, fail the evaluation cleanly
         all_failed = all(env.status == "error" for env in envelopes.values())
         if all_failed:
@@ -160,6 +187,7 @@ def _process_evaluation(eval_id: str, normalized: Dict[str, Any], created_at: st
         # Generate prioritized recommendations (LLM with playbook fallback)
         try:
             recs = RecommendationEngine.generate(eval_id, normalized, envelopes, report)
+            metrics.record_recommendation_method(recs.generation_method)
         except Exception as llm_err:
             logger.warning(f"Recommendation generation encountered error: {llm_err}. Using fallback.", exc_info=True)
             recs = RecommendationResponse(

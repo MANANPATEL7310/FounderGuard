@@ -180,4 +180,31 @@ This file records key architectural, engineering, and product decisions made dur
      - If all 4 models fail, the evaluation safely sets `status="failed"` with an explanatory message.
      - LLM outages or rate limits (e.g. HTTP 429) gracefully fall back to the deterministic playbook generator.
 
+---
+
+## Decision 009: Production Hardening, Observability Metrics, Container Packaging & Pre-Launch Validation
+
+- **Date:** 2026-10-29
+- **Status:** Accepted
+- **Context:** Step 6 implementation (Planning file 04 sections 4.9 to 4.13 and Planning file 05 sections 6 to 10).
+- **Architecture & Rules Established:**
+  1. **Observability & Operational Metrics (`backend/metrics.py`):**
+     - Thread-safe operational metrics tracker recording evaluation throughput, error counts, privacy deletions, OOD frequencies, model latencies, and recommendation method distributions (`llm_grounded` vs. `template_playbook`).
+     - Exposed via `GET /v1/meta/metrics`.
+     - Request middleware automatically injects `X-Request-ID` and latency calculation headers (`X-Process-Time`) into all responses.
+  2. **Security & Privacy Safeguards:**
+     - Pitch text and confidential founder inputs are strictly excluded from logs.
+     - Strict 4000-character boundary limits enforced on all narrative text inputs.
+     - User consent gate enforced before any external LLM invocation.
+     - System prompts use strict isolated delimiter tags preventing prompt injection escape.
+  3. **Failure Injection & Load Testing:**
+     - Created `tests/test_failure_injection.py` testing model crash isolation, LLM outage fallback, boundary enforcement, and injection resistance.
+     - Created `tests/test_load.py` simulating 8 concurrent evaluations across thread pools with zero state contamination and sub-second mean latencies.
+  4. **Packaging & Containerization:**
+     - Created `Dockerfile.backend` (FastAPI with Uvicorn), `Dockerfile.frontend` (Streamlit), and `docker-compose.yml` for unified multi-container local and production deployment.
+  5. **Pre-Launch Quality & Safety Audit (`scripts/verify_prelaunch_checklist.py`):**
+     - Verified all 8 mandatory launch criteria in Section 10 with 100% pass rate (`8/8 [PASS]`).
+     - Generated `docs/prelaunch_checklist_report.md` documenting verified compliance across meaning text, lack of combined scores, blank field handling, OOD and inapplicable states, recommendation validation, zero runtime model downloads, privacy erasure, and environment reproducibility.
+
+
 

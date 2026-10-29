@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    ports:
+      - "8000:8000"
+    environment:
+      - LLM_API_BASE=${LLM_API_BASE:-https://api.groq.com/openai/v1}
+      - LLM_API_KEY=${LLM_API_KEY:-}
+      - LLM_MODEL=${LLM_MODEL:-openai/gpt-oss-20b}
+      - LLM_TIMEOUT_SECONDS=${LLM_TIMEOUT_SECONDS:-45}
+      - LLM_TEMPERATURE=${LLM_TEMPERATURE:-0.2}
+      - ENABLE_LLM=${ENABLE_LLM:-true}
+    volumes:
+      - ./models:/app/models:ro
+      - ./playbook:/app/playbook:ro
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    ports:
+      - "8501:8501"
+    environment:
+      - BACKEND_URL=http://backend:8000
+    depends_on:
+      - backend
+    restart: unless-stopped

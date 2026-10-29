@@ -9,10 +9,14 @@ search-path = [
 ]
 
 [errors]
+missing-source-for-stubs = false
+missing-source = false
 ignore-missing-imports = [
   "startup_features",
   "model_b_inference",
   "model_c_inference",
-  "model_d_inference"
+  "model_d_inference",
+  "reportlab",
+  "reportlab.*"
 ]
 
