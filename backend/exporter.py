@@ -5,10 +5,10 @@ from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 
 # ReportLab imports for PDF export
-from reportlab.lib import colors
-from reportlab.lib.pagesizes import letter
-from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
-from reportlab.platypus import HRFlowable, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
+from reportlab.lib import colors  # type: ignore
+from reportlab.lib.pagesizes import letter  # type: ignore
+from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet  # type: ignore
+from reportlab.platypus import HRFlowable, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle  # type: ignore
 
 
 class ReportExporter:
@@ -303,3 +303,4 @@ class ReportExporter:
         doc.build(story)
         buffer.seek(0)
         return buffer.getvalue()
+

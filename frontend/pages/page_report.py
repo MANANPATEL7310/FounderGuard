@@ -15,10 +15,19 @@ from frontend.ui_helpers import (
 
 def render(goto, start_over):
     report = st.session_state.get("report")
-    eval_id = st.session_state.get("eval_id")
+    raw_eval_id = st.session_state.get("eval_id")
+
+    # If no eval_id in state, return early
+    if not raw_eval_id:
+        st.error("No evaluation ID available.")
+        if st.button("← Return to Start"):
+            start_over()
+        return
+
+    eval_id: str = str(raw_eval_id)
 
     # If no report loaded, try to fetch it
-    if not report and eval_id:
+    if not report:
         report = api_client.get_report(eval_id)
         if report:
             st.session_state["report"] = report
