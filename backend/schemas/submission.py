@@ -78,3 +78,23 @@ class SubmissionResponse(BaseModel):
     created_at: str
     check_status_url: str
 
+
+class ClarificationAnswer(BaseModel):
+    aspect: str
+    question: str
+    answer: str
+
+
+class ClarificationRequest(BaseModel):
+    answers: List[ClarificationAnswer]
+
+
+class ClarificationResponse(BaseModel):
+    evaluation_id: str
+    parent_id: str
+    version: int
+    status: str
+    created_at: str
+    check_status_url: str
+
+

@@ -33,10 +33,14 @@ class EvaluationReport(BaseModel):
 
 class EvaluationStatusResponse(BaseModel):
     evaluation_id: str
+    version: int = 1
+    parent_id: Optional[str] = None
     status: str = Field(description="'queued', 'running', 'report_ready', 'complete', 'failed'")
     stage: str
     created_at: str
     completed_at: Optional[str] = None
     per_model_status: Dict[str, str]
     report_url: Optional[str] = None
+    available_versions: List[Dict[str, Any]] = Field(default_factory=list)
+
 

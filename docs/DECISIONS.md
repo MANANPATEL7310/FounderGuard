@@ -154,3 +154,30 @@ This file records key architectural, engineering, and product decisions made dur
      - Achieved 100% validation pass rate, 100% grounding citation pass rate, 100% priority consistency rate, and 0% prohibited claims.
      - Generated `docs/recommendation_evaluation_report.md` with 10 sample outputs for human audit.
 
+---
+
+## Decision 008: Clarification Loop Versioning, Multi-Format Export, Privacy Deletion & Fault Isolation
+
+- **Date:** 2026-10-29
+- **Status:** Accepted
+- **Context:** Step 5 implementation (Planning file 03 sections 3.8 and 3.9, Planning 04 sections 4.4, 4.7, 4.8, and Planning 05 section 5.11).
+- **Architecture & Rules Established:**
+  1. **Clarification Feedback Loop & Version Lineage:**
+     - `POST /v1/evaluations/{id}/clarifications` receives answers to clarifying questions from Model C and the LLM.
+     - Creates a newly linked version record (`v2`, `v3`, etc.) with `parent_id` and `root_id` tracking.
+     - Merges clarified details into the startup pitch and relevant structured fields, re-normalizes, re-runs narrative models (C and D), and regenerates tailored recommendations.
+     - Frontend provides interactive question input forms and a version switcher dropdown to compare report versions.
+  2. **Multi-Format Export Engine (`backend/exporter.py`):**
+     - `GET /v1/evaluations/{id}/export?format=json|html|pdf`:
+       - `json`: Structured raw report and recommendations JSON with download attachment headers.
+       - `html`: Beautiful, responsive, standalone single-file HTML report with embedded CSS styling.
+       - `pdf`: High-quality multi-page PDF generated via ReportLab with synthesis banners, model sections, recommendation cards, and disclaimers.
+  3. **Privacy & Complete Data Deletion:**
+     - `DELETE /v1/evaluations/{id}` purges all evaluations, results, and lineage records from storage. Subsequent GET calls strictly return 404.
+  4. **Robust Jobs & Fault Isolation:**
+     - Per-model exception catching in `Orchestrator`: a failure or crash in one model (e.g. CUDA OOM or runtime failure) wraps the error in the envelope (`status="error"`) without breaking the entire run.
+     - Report generation continues and surfaces partial results with trust panel warnings.
+     - If all 4 models fail, the evaluation safely sets `status="failed"` with an explanatory message.
+     - LLM outages or rate limits (e.g. HTTP 429) gracefully fall back to the deterministic playbook generator.
+
+
