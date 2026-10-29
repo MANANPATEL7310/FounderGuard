@@ -90,16 +90,18 @@ class RecommendationEngine:
                 )
 
             if pb_item:
-                action = pb_item.get("action", f"Establish clear milestones and validation tests for {issue.title}.")
-                steps = pb_item.get("implementation_steps", [
+                action = str(pb_item.get("action", f"Establish clear milestones and validation tests for {issue.title}."))
+                raw_steps = pb_item.get("implementation_steps", [
                     f"Define baseline assumptions for {issue.title}.",
                     "Engage prospective buyers or stakeholders to evaluate friction.",
                     "Review metrics and adjust positioning accordingly.",
                 ])
-                benefit = pb_item.get("expected_benefit", "Reduces operational and market uncertainty.")
-                val_method = pb_item.get("validation_method", "Measure milestone completion within 30 days.")
-                pb_refs = [pb_item.get("id")]
-                item_assumptions = pb_item.get("assumptions", [])
+                steps = [str(s) for s in raw_steps]
+                benefit = str(pb_item.get("expected_benefit", "Reduces operational and market uncertainty."))
+                val_method = str(pb_item.get("validation_method", "Measure milestone completion within 30 days."))
+                pb_id = str(pb_item.get("id") or "pb_ref")
+                pb_refs: List[str] = [pb_id]
+                item_assumptions = [str(a) for a in pb_item.get("assumptions", [])]
             else:
                 action = f"Run structured validation tests focused on {issue.title}."
                 steps = [
@@ -109,7 +111,7 @@ class RecommendationEngine:
                 ]
                 benefit = "Clarifies customer intent and reduces risk."
                 val_method = "Complete 10 discovery touchpoints within 14 days."
-                pb_refs = ["pb_general_discovery"]
+                pb_refs: List[str] = ["pb_general_discovery"]
                 item_assumptions = ["Team has bandwidth to execute validation tests."]
 
             rec_item = RecommendationItem(
