@@ -9,8 +9,13 @@ def render(goto):
     st.title("ℹ About the Machine Learning Models")
     st.caption("Architecture, training provenance, validation metrics, and limitations.")
 
-    if st.button("← Back to Previous Screen"):
-        goto("landing")
+    ab_c1, ab_c2 = st.columns([1, 1.2])
+    with ab_c1:
+        if st.button("🏠 Return to Home", key="about_back_home_btn"):
+            goto("landing")
+    with ab_c2:
+        if st.button("🚀 Start Startup Evaluation", key="about_start_eval_btn", type="primary"):
+            goto("form", step=1)
 
     # Fetch models catalog from backend
     try:

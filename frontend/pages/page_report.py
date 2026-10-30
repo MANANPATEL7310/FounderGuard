@@ -47,17 +47,43 @@ def render(goto, start_over):
     raw_sections = report.get("sections") or []
     sections = {s["section_number"]: s for s in raw_sections if isinstance(s, dict) and "section_number" in s}
 
+    # Pre-fetch export formats for both Sidebar and Top/Bottom Action Bars
+    ok_json, json_bytes, _ = api_client.export_report(eval_id, "json")
+    ok_html, html_bytes, _ = api_client.export_report(eval_id, "html")
+    ok_pdf, pdf_bytes, _ = api_client.export_report(eval_id, "pdf")
+
     # ── Sidebar Controls ──────────────────────────────────────────────────────────
     with st.sidebar:
-        st.markdown("### Evaluation Actions")
-        st.write(f"**ID:** `{meta.get('evaluation_id', eval_id)}`")
+        st.markdown("## 📥 Actions & Exports")
+        st.caption("Export your evaluation, review model version lineage, or manage data privacy.")
+        st.write(f"**Evaluation ID:** `{meta.get('evaluation_id', eval_id)}`")
         st.write(f"**Completed:** {meta.get('completed_at', '—')[:19].replace('T', ' ')}")
+
+        st.markdown("---")
+        st.markdown("### 📥 Download Report")
+        st.caption("Select your preferred format:")
+        if ok_json and json_bytes is not None:
+            st.download_button("📄 Download JSON Report", data=json_bytes, file_name=f"report_{eval_id}.json", mime="application/json", key="sb_dl_json_btn", use_container_width=True)
+        if ok_html and html_bytes is not None:
+            st.download_button("🌐 Download HTML Report", data=html_bytes, file_name=f"report_{eval_id}.html", mime="text/html", key="sb_dl_html_btn", use_container_width=True)
+        if ok_pdf and pdf_bytes is not None:
+            st.download_button("📑 Download PDF Report", data=pdf_bytes, file_name=f"report_{eval_id}.pdf", mime="application/pdf", key="sb_dl_pdf_btn", use_container_width=True)
+
+        st.markdown("---")
+        st.markdown("### 🧭 Quick Navigation")
+        if st.button("🏠 Home Screen", key="sb_nav_home_btn", type="primary", use_container_width=True):
+            start_over()
+        if st.button("➕ Start New Evaluation", key="sb_nav_new_eval_btn", use_container_width=True):
+            start_over()
+        if st.button("ℹ️ About the Models", key="sb_nav_about_btn", use_container_width=True):
+            goto("about")
 
         # Lineage / Version Switcher (Section 3.8)
         status_data = api_client.get_status(eval_id)
         available_versions = status_data.get("available_versions", []) if status_data else []
         if len(available_versions) > 1:
-            st.markdown("#### Evaluation Versions")
+            st.markdown("---")
+            st.markdown("### 🔄 Evaluation Versions")
             version_labels = {v["evaluation_id"]: f"v{v.get('version', 1)} ({v.get('evaluation_id')[-8:]})" for v in available_versions}
             curr_idx = list(version_labels.keys()).index(eval_id) if eval_id in version_labels else 0
             selected_v = st.selectbox(
@@ -65,6 +91,7 @@ def render(goto, start_over):
                 options=list(version_labels.keys()),
                 format_func=lambda x: version_labels.get(x, x),
                 index=curr_idx,
+                key="sb_version_selector",
             )
             if selected_v != eval_id:
                 st.session_state["eval_id"] = selected_v
@@ -72,32 +99,8 @@ def render(goto, start_over):
                 st.rerun()
 
         st.markdown("---")
-
-        # Export Controls (Section 3.9)
-        st.markdown("#### Export Report")
-        ok_json, json_bytes, _ = api_client.export_report(eval_id, "json")
-        if ok_json and json_bytes is not None:
-            st.download_button("📄 Download JSON", data=json_bytes, file_name=f"report_{eval_id}.json", mime="application/json", use_container_width=True)
-
-        ok_html, html_bytes, _ = api_client.export_report(eval_id, "html")
-        if ok_html and html_bytes is not None:
-            st.download_button("🌐 Download HTML", data=html_bytes, file_name=f"report_{eval_id}.html", mime="text/html", use_container_width=True)
-
-        ok_pdf, pdf_bytes, _ = api_client.export_report(eval_id, "pdf")
-        if ok_pdf and pdf_bytes is not None:
-            st.download_button("📑 Download PDF", data=pdf_bytes, file_name=f"report_{eval_id}.pdf", mime="application/pdf", use_container_width=True)
-
-        st.markdown("---")
-
-        if st.button("➕ Start New Evaluation", use_container_width=True):
-            start_over()
-
-        if st.button("ℹ About the Models", use_container_width=True):
-            goto("about")
-
-        st.markdown("---")
-        st.markdown("#### Privacy & Data")
-        if st.button("🗑 Delete My Data", type="secondary", use_container_width=True):
+        st.markdown("### 🔒 Privacy & Data")
+        if st.button("🗑️ Delete Evaluation Data", key="sb_delete_data_btn", type="secondary", use_container_width=True):
             if eval_id:
                 api_client.delete_evaluation(eval_id)
             st.success("Your evaluation data has been deleted.")
@@ -113,6 +116,39 @@ def render(goto, start_over):
         f"Location: **{input_sum.get('country', '—')} {input_sum.get('state') or ''}** | "
         f"Report ID: `{meta.get('evaluation_id', eval_id)}`"
     )
+
+    # ── Top Download & Navigation Toolbar ─────────────────────────────────────────
+    st.markdown(
+        """
+        <div style="background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(99, 102, 241, 0.35); border-radius: 10px; padding: 12px 18px; margin: 12px 0 18px 0;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-weight:700; font-size:0.95rem; color:#F8FAFC;">
+                    📥 Quick Actions & Report Downloads
+                </span>
+                <span style="font-size:0.8rem; color:#A5B4FC;">
+                    👈 All options also accessible anytime in the left sidebar
+                </span>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    m_c1, m_c2, m_c3, m_c4, m_c5 = st.columns([1.5, 1.2, 1.2, 1.2, 1.3])
+    with m_c1:
+        if st.button("🏠 Home Screen", key="main_top_nav_home", type="primary", use_container_width=True):
+            start_over()
+    with m_c2:
+        if ok_json and json_bytes is not None:
+            st.download_button("📄 JSON", data=json_bytes, file_name=f"report_{eval_id}.json", mime="application/json", key="main_top_dl_json", use_container_width=True)
+    with m_c3:
+        if ok_html and html_bytes is not None:
+            st.download_button("🌐 HTML", data=html_bytes, file_name=f"report_{eval_id}.html", mime="text/html", key="main_top_dl_html", use_container_width=True)
+    with m_c4:
+        if ok_pdf and pdf_bytes is not None:
+            st.download_button("📑 PDF", data=pdf_bytes, file_name=f"report_{eval_id}.pdf", mime="application/pdf", key="main_top_dl_pdf", use_container_width=True)
+    with m_c5:
+        if st.button("➕ New Evaluation", key="main_top_new_eval", use_container_width=True):
+            start_over()
 
     # ── Overall Interpretation Banner ───────────────────────────────────────────
     cat = interpretation.get("category", "Mixed picture")
@@ -385,6 +421,29 @@ def render(goto, start_over):
         st.markdown("### Section 8: Overall Assessment and Next Steps")
         st.success(f"**Final Diagnostic:** {interpretation.get('category')} — {interpretation.get('summary')}")
         st.info("Prioritized tactical recommendations are available in the **Recommendations** tab.")
+
+        st.markdown("---")
+        st.markdown("### 🏁 Evaluation Completed — Quick Navigation & Exports")
+        st.caption("Download your report now or return to the home screen to test another startup idea.")
+        bot_c1, bot_c2, bot_c3, bot_c4, bot_c5 = st.columns([1.5, 1.2, 1.2, 1.2, 1.3])
+        with bot_c1:
+            if st.button("🏠 Return to Home", key="rep_bottom_nav_home", type="primary", use_container_width=True):
+                start_over()
+        with bot_c2:
+            if ok_json and json_bytes is not None:
+                st.download_button("📄 Download JSON", data=json_bytes, file_name=f"report_{eval_id}.json", mime="application/json", key="rep_bottom_dl_json", use_container_width=True)
+        with bot_c3:
+            if ok_html and html_bytes is not None:
+                st.download_button("🌐 Download HTML", data=html_bytes, file_name=f"report_{eval_id}.html", mime="text/html", key="rep_bottom_dl_html", use_container_width=True)
+        with bot_c4:
+            if ok_pdf and pdf_bytes is not None:
+                st.download_button("📑 Download PDF", data=pdf_bytes, file_name=f"report_{eval_id}.pdf", mime="application/pdf", key="rep_bottom_dl_pdf", use_container_width=True)
+        with bot_c5:
+            if st.button("🗑️ Delete Data", key="rep_bottom_del_data", use_container_width=True):
+                if eval_id:
+                    api_client.delete_evaluation(eval_id)
+                st.success("Your evaluation data has been deleted.")
+                start_over()
 
     # ═════════════════════════════════════════════════════════════════════════════
     # TAB 2: RECOMMENDATIONS (Step 3: Template Playbook / Step 4: LLM)

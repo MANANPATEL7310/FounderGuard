@@ -23,7 +23,7 @@ st.set_page_config(
     page_title="Startup Evaluation",
     page_icon="🚀",
     layout="wide",
-    initial_sidebar_state="collapsed",
+    initial_sidebar_state="expanded",
 )
 
 # ── Global Modern Styling ─────────────────────────────────────────────────────
@@ -44,9 +44,31 @@ st.markdown("""
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header[data-testid="stHeader"] {background: transparent;}
+
+    /* Sidebar collapse button styling so users clearly see what it does */
+    [data-testid="collapsedControl"] {
+        background: #1E293B !important;
+        border: 1px solid #6366F1 !important;
+        border-radius: 8px !important;
+        padding: 5px 12px !important;
+        color: #F1F5F9 !important;
+        box-shadow: 0 2px 10px rgba(99, 102, 241, 0.3) !important;
+        transition: all 0.2s ease !important;
+    }
+    [data-testid="collapsedControl"]:hover {
+        background: #312E81 !important;
+        border-color: #818CF8 !important;
+    }
+    [data-testid="collapsedControl"]::after {
+        content: " ☰ Actions & Downloads";
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: #C7D2FE;
+        margin-left: 6px;
+    }
     
     .block-container {
-        padding-top: 2rem !important;
+        padding-top: 1.5rem !important;
         padding-bottom: 3rem !important;
         max-width: 1180px !important;
     }
@@ -198,6 +220,45 @@ if isinstance(st.session_state.get("f_currency"), dict):
     st.session_state["f_currency"] = st.session_state["f_currency"].get("code", "USD")
 if isinstance(st.session_state.get("f_state"), dict):
     st.session_state["f_state"] = st.session_state["f_state"].get("code", "")
+
+# ── Global Top Navigation Header ──────────────────────────────────────────────
+with st.container():
+    h_col1, h_col2, h_col3, h_col4 = st.columns([3.5, 1.1, 1.1, 1.4])
+    with h_col1:
+        st.markdown(
+            """
+            <div style="display:flex;align-items:center;gap:8px;padding:2px 0;">
+                <span style="font-size:1.35rem;">🚀</span>
+                <div>
+                    <span style="font-size:1.1rem;font-weight:800;color:#F8FAFC;letter-spacing:-0.02em;">FounderGuard</span>
+                    <span style="font-size:0.72rem;background:#4F46E5;color:#EEF2FF;padding:2px 7px;border-radius:8px;font-weight:600;margin-left:4px;">AI</span>
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+    with h_col2:
+        if st.button("🏠 Home", key="global_top_nav_home", use_container_width=True):
+            start_over()
+    with h_col3:
+        if st.button("ℹ️ Models", key="global_top_nav_about", use_container_width=True):
+            goto("about")
+    with h_col4:
+        curr_page = st.session_state.get("page", "landing")
+        if curr_page == "form":
+            step_num = st.session_state.get("step", 1)
+            st.markdown(
+                f"<div style='text-align:right;padding-top:6px;font-size:0.85rem;color:#A5B4FC;font-weight:600;'>Step {step_num} / 5</div>",
+                unsafe_allow_html=True,
+            )
+        elif curr_page == "landing":
+            if st.button("✨ Evaluate", key="global_top_nav_start", type="primary", use_container_width=True):
+                goto("form", step=1)
+        else:
+            if st.button("➕ New Eval", key="global_top_nav_new", type="primary", use_container_width=True):
+                start_over()
+
+st.markdown("<hr style='margin:4px 0 16px 0;border:none;border-top:1px solid rgba(148,163,184,0.12);'>", unsafe_allow_html=True)
 
 # ── Route ─────────────────────────────────────────────────────────────────────
 page = st.session_state["page"]
