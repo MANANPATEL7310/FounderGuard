@@ -15,12 +15,22 @@ STEPS = {
 def _step_header(current: int):
     cols = st.columns(len(STEPS))
     for i, (num, label) in enumerate(STEPS.items()):
-        icon = "✅" if num < current else ("→" if num == current else "○")
+        is_active = num == current
+        is_done = num < current
+        bg = "rgba(99, 102, 241, 0.2)" if is_active else ("rgba(16, 185, 129, 0.15)" if is_done else "rgba(148, 163, 184, 0.08)")
+        border = "#6366F1" if is_active else ("#10B981" if is_done else "rgba(148, 163, 184, 0.2)")
+        color = "#F8FAFC" if (is_active or is_done) else "#94A3B8"
+        icon = "✓" if is_done else str(num)
         cols[i].markdown(
-            f"<div style='text-align:center;font-size:13px'>{icon}<br><b>{label}</b></div>",
+            f"""
+            <div style="background:{bg};border:1px solid {border};border-radius:10px;padding:8px 10px;text-align:center;">
+                <span style="font-size:0.75rem;font-weight:700;color:{border};">STEP {icon}</span><br>
+                <span style="font-size:0.85rem;font-weight:600;color:{color};">{label}</span>
+            </div>
+            """,
             unsafe_allow_html=True,
         )
-    st.markdown("---")
+    st.markdown("<div style='height:16px;'></div>", unsafe_allow_html=True)
 
 
 def render(goto, opts: dict, start_over):

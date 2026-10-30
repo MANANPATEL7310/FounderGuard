@@ -118,10 +118,10 @@ def render(goto, start_over):
     icon, bg_color = INTERP_ICONS.get(cat, ("⚪", "#f5f5f5"))
     st.markdown(
         f"""
-        <div style="background-color:{bg_color};border-left:6px solid #455A64;padding:16px 20px;border-radius:6px;margin:12px 0 20px 0;">
-            <div style="font-size:1.25rem;font-weight:700;margin-bottom:6px;">{icon} Overall Synthesis: {cat}</div>
-            <div style="font-size:0.95rem;color:#333;margin-bottom:8px;">{interpretation.get('summary', '')}</div>
-            <ul style="margin:0;padding-left:20px;font-size:0.88rem;color:#555;">
+        <div style="background-color:{bg_color};border:1px solid rgba(148,163,184,0.2);border-left:6px solid #6366F1;padding:18px 24px;border-radius:10px;margin:12px 0 24px 0;">
+            <div style="font-size:1.25rem;font-weight:700;color:#F8FAFC;margin-bottom:6px;">{icon} Overall Synthesis: {cat}</div>
+            <div style="font-size:0.95rem;color:#E2E8F0;margin-bottom:10px;line-height:1.5;">{interpretation.get('summary', '')}</div>
+            <ul style="margin:0;padding-left:20px;font-size:0.88rem;color:#94A3B8;line-height:1.6;">
                 {''.join(f'<li>{r}</li>' for r in interpretation.get('reasons', []))}
             </ul>
         </div>

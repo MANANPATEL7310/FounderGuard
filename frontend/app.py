@@ -7,6 +7,14 @@ Page flow managed via st.session_state["page"]:
 Run with:
   BACKEND_URL=http://localhost:8000 streamlit run frontend/app.py
 """
+import sys
+from pathlib import Path
+
+# Ensure workspace root is in sys.path
+ROOT_DIR = Path(__file__).resolve().parent.parent
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
+
 import streamlit as st
 from frontend import api_client
 
@@ -16,6 +24,103 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="collapsed",
 )
+
+# ── Global Modern Styling ─────────────────────────────────────────────────────
+st.markdown("""
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap');
+
+    html, body, [class*="css"] {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+        font-family: 'Outfit', sans-serif !important;
+        font-weight: 700 !important;
+        letter-spacing: -0.02em;
+    }
+
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header[data-testid="stHeader"] {background: transparent;}
+    
+    .block-container {
+        padding-top: 2rem !important;
+        padding-bottom: 3rem !important;
+        max-width: 1180px !important;
+    }
+
+    .fg-card {
+        background: rgba(30, 41, 59, 0.7);
+        border: 1px solid rgba(148, 163, 184, 0.15);
+        border-radius: 12px;
+        padding: 22px;
+        margin-bottom: 18px;
+        backdrop-filter: blur(8px);
+        box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.25);
+        transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+
+    .fg-card:hover {
+        border-color: rgba(99, 102, 241, 0.4);
+    }
+
+    .hero-title {
+        background: linear-gradient(135deg, #F8FAFC 0%, #94A3B8 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-size: 2.75rem !important;
+        font-weight: 800 !important;
+        line-height: 1.15;
+    }
+
+    .hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(99, 102, 241, 0.15);
+        color: #A5B4FC;
+        border: 1px solid rgba(99, 102, 241, 0.3);
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        margin-bottom: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    div.stButton > button {
+        border-radius: 8px !important;
+        font-weight: 600 !important;
+        padding: 0.55rem 1.25rem !important;
+        border: 1px solid rgba(148, 163, 184, 0.2) !important;
+        transition: all 0.2s ease !important;
+    }
+
+    div.stButton > button[kind="primary"] {
+        background: linear-gradient(135deg, #6366F1 0%, #4F46E5 100%) !important;
+        color: white !important;
+        border: none !important;
+        box-shadow: 0 4px 14px rgba(79, 70, 229, 0.4) !important;
+    }
+
+    div.stButton > button[kind="primary"]:hover {
+        box-shadow: 0 6px 20px rgba(79, 70, 229, 0.6) !important;
+        transform: translateY(-1px);
+    }
+
+    [data-testid="stMetricValue"] {
+        font-family: 'Outfit', sans-serif !important;
+        font-weight: 800 !important;
+    }
+
+    section[data-testid="stSidebar"] {
+        background: #0F172A !important;
+        border-right: 1px solid rgba(148, 163, 184, 0.1) !important;
+    }
+</style>
+""", unsafe_allow_html=True)
 
 # ── Session-state initialisation ──────────────────────────────────────────────
 DEFAULTS = {
