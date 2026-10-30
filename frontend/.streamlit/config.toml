@@ -11,3 +11,4 @@ showSidebarNavigation = false
 
 [server]
 headless = true
+

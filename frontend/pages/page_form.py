@@ -39,14 +39,14 @@ def render(goto, opts: dict, start_over):
     # Sidebar navigation
     with st.sidebar:
         st.markdown("### Navigation")
-        if st.button("⬅ Back to Landing"):
+        if st.button("⬅ Back to Landing", key=f"form_sidebar_landing_{step}"):
             start_over()
         st.markdown("---")
         st.info("💡 Nothing is saved until you submit on the Review page.")
-        if st.button("🔄 Start Over"):
+        if st.button("🔄 Start Over", key=f"form_sidebar_startover_{step}"):
             start_over()
         st.markdown("---")
-        if st.button("ℹ About the Models"):
+        if st.button("ℹ About the Models", key=f"form_sidebar_about_{step}"):
             goto("about")
 
     st.title("🚀 Startup Evaluation Form")
@@ -151,9 +151,30 @@ def _step2(goto, opts):
     st.caption("These fields determine how your startup is classified by the models.")
 
     industries = opts.get("industries", ["Other"])
-    countries = opts.get("countries", ["USA"])
+    raw_countries = opts.get("countries", ["USA"])
     us_states = opts.get("us_states", [])
     biz_models = opts.get("business_models", [])
+
+    country_codes = []
+    country_display_names = {}
+    for c in raw_countries:
+        if isinstance(c, dict):
+            c_code = c.get("code", "")
+            c_name = c.get("name", c_code)
+            country_codes.append(c_code)
+            country_display_names[c_code] = f"{c_name} ({c_code})"
+        else:
+            c_str = str(c)
+            country_codes.append(c_str)
+            country_display_names[c_str] = c_str
+
+    if not country_codes:
+        country_codes = ["USA"]
+        country_display_names = {"USA": "United States (USA)"}
+
+    curr_country = st.session_state.get("f_country", "USA")
+    if isinstance(curr_country, dict):
+        curr_country = curr_country.get("code", "USA")
 
     def _safe_idx(lst, val, default=0):
         try:
@@ -170,8 +191,9 @@ def _step2(goto, opts):
         )
         country = st.selectbox(
             "Country *",
-            options=countries,
-            index=_safe_idx(countries, st.session_state["f_country"]),
+            options=country_codes,
+            index=_safe_idx(country_codes, curr_country),
+            format_func=lambda code: country_display_names.get(code, code),
             help="Non-US startups run Model B with a location warning. Model A handles non-US gracefully.",
         )
 

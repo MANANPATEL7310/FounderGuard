@@ -38,13 +38,14 @@ def render(goto, start_over):
             start_over()
         return
 
-    meta = report.get("meta", {})
-    input_sum = report.get("input_summary", {})
-    models = report.get("models", {})
-    interpretation = report.get("interpretation", {})
-    trust = report.get("trust", {})
-    key_factors = report.get("key_factors", {})
-    sections = {s["section_number"]: s for s in report.get("sections", [])}
+    meta = report.get("meta") or {}
+    input_sum = report.get("input_summary") or {}
+    models = report.get("models") or {}
+    interpretation = report.get("interpretation") or {}
+    trust = report.get("trust") or {}
+    key_factors = report.get("key_factors") or {}
+    raw_sections = report.get("sections") or []
+    sections = {s["section_number"]: s for s in raw_sections if isinstance(s, dict) and "section_number" in s}
 
     # ── Sidebar Controls ──────────────────────────────────────────────────────────
     with st.sidebar:
@@ -75,15 +76,15 @@ def render(goto, start_over):
         # Export Controls (Section 3.9)
         st.markdown("#### Export Report")
         ok_json, json_bytes, _ = api_client.export_report(eval_id, "json")
-        if ok_json:
+        if ok_json and json_bytes is not None:
             st.download_button("📄 Download JSON", data=json_bytes, file_name=f"report_{eval_id}.json", mime="application/json", use_container_width=True)
 
         ok_html, html_bytes, _ = api_client.export_report(eval_id, "html")
-        if ok_html:
+        if ok_html and html_bytes is not None:
             st.download_button("🌐 Download HTML", data=html_bytes, file_name=f"report_{eval_id}.html", mime="text/html", use_container_width=True)
 
         ok_pdf, pdf_bytes, _ = api_client.export_report(eval_id, "pdf")
-        if ok_pdf:
+        if ok_pdf and pdf_bytes is not None:
             st.download_button("📑 Download PDF", data=pdf_bytes, file_name=f"report_{eval_id}.pdf", mime="application/pdf", use_container_width=True)
 
         st.markdown("---")
@@ -466,17 +467,18 @@ def render(goto, start_over):
                             placeholder="Provide metrics, details, or operational facts...",
                             label_visibility="collapsed",
                         )
+                        ans_str = str(ans_val or "").strip()
                         answers.append({
                             "aspect": q_aspect,
                             "question": q_text,
-                            "answer": ans_val,
+                            "answer": ans_str,
                         })
 
                     st.markdown("")
                     clarif_submitted = st.form_submit_button("Submit Clarifications & Generate New Version 🚀", use_container_width=True)
 
                     if clarif_submitted:
-                        valid_answers = [a for a in answers if a["answer"].strip()]
+                        valid_answers = [a for a in answers if a["answer"]]
                         if not valid_answers:
                             st.warning("Please provide at least one answer before submitting clarifications.")
                         else:

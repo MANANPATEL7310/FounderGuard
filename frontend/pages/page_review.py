@@ -7,19 +7,41 @@ from frontend.ui_helpers import RISK_COLORS
 
 def _build_payload() -> dict:
     s = st.session_state
+
+    # Safe country extraction (handles both string and dict formats)
+    raw_country = s.get("f_country", "USA")
+    if isinstance(raw_country, dict):
+        country_code = raw_country.get("code") or raw_country.get("name") or "USA"
+    else:
+        country_code = str(raw_country or "USA").strip()
+
+    # Safe state extraction
+    raw_state = s.get("f_state")
+    if isinstance(raw_state, dict):
+        state_code = raw_state.get("code") or raw_state.get("name")
+    else:
+        state_code = str(raw_state).strip() if raw_state else None
+
+    # Safe currency extraction
+    raw_curr = s.get("f_currency", "USD")
+    if isinstance(raw_curr, dict):
+        curr_code = raw_curr.get("code", "USD")
+    else:
+        curr_code = str(raw_curr or "USD").strip()
+
     payload = {
         "idea_description": s["f_idea"],
         "problem_statement": s["f_problem"] or None,
         "target_customer": s["f_customer"] or None,
         "industry": s["f_industry"],
-        "country": s["f_country"],
-        "state": s["f_state"] or None,
+        "country": country_code,
+        "state": state_code,
         "target_market": s["f_target_market"],
         "business_model": s["f_business_model"],
         "stage": s["f_stage"],
         "budget_available": s["f_budget"] if s["f_budget"] > 0 else None,
         "funding_raised": s["f_funding_raised"],
-        "currency": s["f_currency"],
+        "currency": curr_code,
         "funding_rounds": s["f_funding_rounds"],
         "investor_types": s["f_investor_types"],
         "rounds_reached": s["f_rounds_reached"],
@@ -45,7 +67,7 @@ def render(goto, start_over):
     st.caption("Check the details below before running the evaluation. This is your last chance to edit.")
 
     with st.sidebar:
-        if st.button("🔄 Start Over"):
+        if st.button("🔄 Start Over", key="review_sidebar_start_over"):
             start_over()
 
     payload = _build_payload()
@@ -58,9 +80,9 @@ def render(goto, start_over):
             detail = result.get("detail", "Unknown validation error.")
             st.error(f"Validation failed: {detail}")
             col1, col2 = st.columns(2)
-            if col1.button("← Edit"):
+            if col1.button("← Edit", key="review_val_err_edit"):
                 goto("form", step=5)
-            if col2.button("🔄 Start Over"):
+            if col2.button("🔄 Start Over", key="review_val_err_start_over"):
                 start_over()
             return
         st.session_state["validate_result"] = result
@@ -150,12 +172,12 @@ def render(goto, start_over):
     col_edit, col_submit = st.columns([2, 3])
 
     with col_edit:
-        if st.button("← Edit Submission", use_container_width=True):
+        if st.button("← Edit Submission", key="review_bottom_edit_btn", use_container_width=True):
             st.session_state["validate_result"] = None
             goto("form", step=5)
 
     with col_submit:
-        if st.button("🚀 Submit for Evaluation", type="primary", use_container_width=True):
+        if st.button("🚀 Submit for Evaluation", key="review_bottom_submit_btn", type="primary", use_container_width=True):
             with st.spinner("Submitting…"):
                 ok, resp = api_client.submit_evaluation(payload)
             if ok:
