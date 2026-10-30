@@ -8,6 +8,7 @@ Run with:
   BACKEND_URL=http://localhost:8000 streamlit run frontend/app.py
 """
 import sys
+import importlib
 from pathlib import Path
 
 # Ensure workspace root is in sys.path
@@ -190,30 +191,44 @@ if st.session_state["options"] is None:
 
 opts = st.session_state["options"]
 
+# ── Defensively sanitize stale session state from earlier runs ────────────────
+if isinstance(st.session_state.get("f_country"), dict):
+    st.session_state["f_country"] = st.session_state["f_country"].get("code", "USA")
+if isinstance(st.session_state.get("f_currency"), dict):
+    st.session_state["f_currency"] = st.session_state["f_currency"].get("code", "USD")
+if isinstance(st.session_state.get("f_state"), dict):
+    st.session_state["f_state"] = st.session_state["f_state"].get("code", "")
+
 # ── Route ─────────────────────────────────────────────────────────────────────
 page = st.session_state["page"]
 
 if page == "landing":
     from frontend.pages import page_landing
+    importlib.reload(page_landing)
     page_landing.render(goto)
 
 elif page == "form":
     from frontend.pages import page_form
+    importlib.reload(page_form)
     page_form.render(goto, opts, start_over)
 
 elif page == "review":
     from frontend.pages import page_review
+    importlib.reload(page_review)
     page_review.render(goto, start_over)
 
 elif page == "processing":
     from frontend.pages import page_processing
+    importlib.reload(page_processing)
     page_processing.render(goto)
 
 elif page == "report":
     from frontend.pages import page_report
+    importlib.reload(page_report)
     page_report.render(goto, start_over)
 
 elif page == "about":
     from frontend.pages import page_about
+    importlib.reload(page_about)
     page_about.render(goto)
 
