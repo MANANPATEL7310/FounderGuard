@@ -100,7 +100,11 @@ class IssuePrioritizer:
                 asp_name = str(a.get("aspect", "")).lower()
                 status = str(a.get("status", "not_stated")).lower()
                 evidence_list = a.get("evidence", [])
-                ev_quote = evidence_list[0] if evidence_list else a.get("note", "")
+                raw_ev = evidence_list[0] if evidence_list else a.get("note", "")
+                if isinstance(raw_ev, dict):
+                    ev_quote = raw_ev.get("text") or raw_ev.get("quote") or raw_ev.get("sentence") or ""
+                else:
+                    ev_quote = str(raw_ev or "").strip()
 
                 target_themes: List[str] = []
                 if "problem" in asp_name:

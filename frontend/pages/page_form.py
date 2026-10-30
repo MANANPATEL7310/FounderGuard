@@ -152,7 +152,7 @@ def _step2(goto, opts):
 
     industries = opts.get("industries", ["Other"])
     raw_countries = opts.get("countries", ["USA"])
-    us_states = opts.get("us_states", [])
+    raw_states = opts.get("us_states", [])
     biz_models = opts.get("business_models", [])
 
     country_codes = []
@@ -175,6 +175,23 @@ def _step2(goto, opts):
     curr_country = st.session_state.get("f_country", "USA")
     if isinstance(curr_country, dict):
         curr_country = curr_country.get("code", "USA")
+
+    state_codes = [""]
+    state_display_names = {"": "— Select State —"}
+    for s in raw_states:
+        if isinstance(s, dict):
+            s_code = s.get("code", "")
+            s_name = s.get("name", s_code)
+            state_codes.append(s_code)
+            state_display_names[s_code] = f"{s_name} ({s_code})"
+        else:
+            s_str = str(s)
+            state_codes.append(s_str)
+            state_display_names[s_str] = s_str
+
+    curr_state = st.session_state.get("f_state", "")
+    if isinstance(curr_state, dict):
+        curr_state = curr_state.get("code", "")
 
     def _safe_idx(lst, val, default=0):
         try:
@@ -200,11 +217,11 @@ def _step2(goto, opts):
         # US state — shown only for USA
         state = ""
         if country == "USA":
-            state_opts = [""] + us_states
             state = st.selectbox(
                 "US State *",
-                options=state_opts,
-                index=_safe_idx(state_opts, st.session_state["f_state"]),
+                options=state_codes,
+                index=_safe_idx(state_codes, curr_state),
+                format_func=lambda code: state_display_names.get(code, code),
                 help="Required for US startups. Unlisted states become OTHER in Model B.",
             )
 

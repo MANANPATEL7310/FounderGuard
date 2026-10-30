@@ -77,7 +77,23 @@ class RecommendationEngine:
             pb_item = playbook_kb.find_playbook_item(theme=issue.theme, stage=stage)
 
             # Build tailored 'why it matters' narrative
-            quote_snip = f" (Evidence noted: '{issue.evidence_quotes[0][:80]}...')" if issue.evidence_quotes else ""
+            quote_snip = ""
+            if issue.evidence_quotes:
+                raw_q = issue.evidence_quotes[0]
+                if isinstance(raw_q, dict):
+                    q_text = raw_q.get("text") or raw_q.get("quote") or str(raw_q)
+                else:
+                    q_text = str(raw_q)
+                if "{'text':" in q_text or '{"text":' in q_text:
+                    import re
+                    m = re.search(r"['\"]text['\"]\s*:\s*['\"]([^'\"]+)['\"]", q_text)
+                    if m:
+                        q_text = f"Model C: {m.group(1)}"
+                q_clean = q_text.strip().replace("\n", " ")
+                if len(q_clean) > 80:
+                    quote_snip = f" (Evidence noted: '{q_clean[:80]}...')"
+                elif q_clean:
+                    quote_snip = f" (Evidence noted: '{q_clean}')"
             if issue.is_gap_only:
                 why_it_matters = (
                     f"As a {industry} startup at '{stage}' stage, the pitch currently does not clearly state details regarding "

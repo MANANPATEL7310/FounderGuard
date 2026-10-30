@@ -334,7 +334,32 @@ def render(goto, start_over):
                 if f_list:
                     st.markdown(f"#### {m_key.replace('_', ' ').title()}")
                     for item in f_list:
-                        st.json(item, expanded=False)
+                        if isinstance(item, dict):
+                            if "feature" in item:
+                                feat = item.get("feature", "Feature")
+                                val = item.get("value", "")
+                                effect = item.get("effect_on_probability") or item.get("importance")
+                                direction = item.get("direction", "")
+                                eff_str = f" | Effect: `{effect:+.4f}`" if isinstance(effect, float) else (f" | Importance: `{effect}`" if effect is not None else "")
+                                dir_icon = "🔺 " if "raise" in direction.lower() else ("🔻 " if "lower" in direction.lower() else "📊 ")
+                                dir_str = f" ({direction})" if direction else ""
+                                val_str = f" (Value: `{val}`)" if val is not None and str(val).strip() != "" else ""
+                                st.markdown(f"- {dir_icon}**{feat}**{val_str}{eff_str}{dir_str}")
+                            elif "term" in item:
+                                term = item.get("term", "")
+                                st.markdown(f"- 🏷️ **Attended Concept:** `{term}`")
+                            elif "category" in item:
+                                cat = item.get("category", "")
+                                prob = item.get("probability", 0)
+                                ev = item.get("evidence", "")
+                                prob_pct = f"{prob * 100:.1f}%" if isinstance(prob, (int, float)) else str(prob)
+                                ev_text = f" — *\"{ev}\"*" if ev else ""
+                                st.markdown(f"- ⚠️ **{cat}** (Failure Risk Pattern: `{prob_pct}`){ev_text}")
+                            else:
+                                parts = [f"**{k.replace('_', ' ').title()}:** {v}" for k, v in item.items()]
+                                st.markdown(f"- {' | '.join(parts)}")
+                        else:
+                            st.markdown(f"- {item}")
         else:
             st.info("No specific key factors extracted.")
 
@@ -404,6 +429,13 @@ def render(goto, start_over):
             for r in filtered_recs:
                 p_label, p_bg, p_fg = prio_colors.get(r.get("priority", "Medium"), ("⚪ Priority", "#f5f5f5", "#333"))
 
+                why_raw = str(r.get('why_it_matters_for_this_startup') or "")
+                if "{'text':" in why_raw or '{"text":' in why_raw:
+                    import re
+                    m = re.search(r"['\"]text['\"]\s*:\s*['\"]([^'\"]+)['\"]", why_raw)
+                    if m:
+                        why_raw = re.sub(r"\{['\"]text['\"].*?\}", f"\"{m.group(1)}\"", why_raw)
+
                 with st.container():
                     st.markdown(
                         f"""
@@ -413,7 +445,7 @@ def render(goto, start_over):
                                 <span style="background:{p_fg};color:white;padding:3px 10px;border-radius:12px;font-size:0.8rem;font-weight:600;">{p_label}</span>
                             </div>
                             <div style="font-size:0.92rem;color:#444;margin:8px 0 12px 0;">
-                                <b>Why it matters:</b> {r.get('why_it_matters_for_this_startup')}
+                                <b>Why it matters:</b> {why_raw}
                             </div>
                             <div style="background:white;padding:12px;border-radius:6px;border:1px solid #eee;margin-bottom:10px;">
                                 <b>Specific Action:</b> {r.get('specific_action')}
@@ -533,5 +565,15 @@ def render(goto, start_over):
         val_status = trust.get("validation_status", {})
         if val_status:
             st.markdown("#### 🧪 Model Offline Validation Status")
-            st.json(val_status, expanded=False)
+            for m_key, m_val in val_status.items():
+                m_title = m_key.replace("_", " ").title()
+                st.markdown(f"**{m_title} Components:**")
+                if isinstance(m_val, dict):
+                    for comp, status_str in m_val.items():
+                        comp_name = comp.replace("_", " ").title()
+                        is_ok = "validated" in str(status_str).lower() and "not validated" not in str(status_str).lower()
+                        badge = "✅" if is_ok else "ℹ️"
+                        st.markdown(f"- {badge} **{comp_name}:** {status_str}")
+                else:
+                    st.markdown(f"- ℹ️ {m_val}")
 
