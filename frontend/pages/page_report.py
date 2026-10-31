@@ -54,28 +54,27 @@ def render(goto, start_over):
 
     # ── Sidebar Controls ──────────────────────────────────────────────────────────
     with st.sidebar:
-        st.markdown("## 📥 Actions & Exports")
-        st.caption("Export your evaluation, review model version lineage, or manage data privacy.")
-        st.write(f"**Evaluation ID:** `{meta.get('evaluation_id', eval_id)}`")
+        st.markdown("### Actions & Exports")
+        st.caption("Export evaluation data, switch versions, or purge records.")
+        st.write(f"**ID:** `{meta.get('evaluation_id', eval_id)}`")
         st.write(f"**Completed:** {meta.get('completed_at', '—')[:19].replace('T', ' ')}")
 
         st.markdown("---")
-        st.markdown("### 📥 Download Report")
-        st.caption("Select your preferred format:")
+        st.markdown("#### Download Report")
         if ok_json and json_bytes is not None:
-            st.download_button("📄 Download JSON Report", data=json_bytes, file_name=f"report_{eval_id}.json", mime="application/json", key="sb_dl_json_btn", use_container_width=True)
+            st.download_button("Download JSON Report", data=json_bytes, file_name=f"report_{eval_id}.json", mime="application/json", key="sb_dl_json_btn", use_container_width=True)
         if ok_html and html_bytes is not None:
-            st.download_button("🌐 Download HTML Report", data=html_bytes, file_name=f"report_{eval_id}.html", mime="text/html", key="sb_dl_html_btn", use_container_width=True)
+            st.download_button("Download HTML Report", data=html_bytes, file_name=f"report_{eval_id}.html", mime="text/html", key="sb_dl_html_btn", use_container_width=True)
         if ok_pdf and pdf_bytes is not None:
-            st.download_button("📑 Download PDF Report", data=pdf_bytes, file_name=f"report_{eval_id}.pdf", mime="application/pdf", key="sb_dl_pdf_btn", use_container_width=True)
+            st.download_button("Download PDF Report", data=pdf_bytes, file_name=f"report_{eval_id}.pdf", mime="application/pdf", key="sb_dl_pdf_btn", use_container_width=True)
 
         st.markdown("---")
-        st.markdown("### 🧭 Quick Navigation")
-        if st.button("🏠 Home Screen", key="sb_nav_home_btn", type="primary", use_container_width=True):
+        st.markdown("#### Navigation")
+        if st.button("Return to Home", key="sb_nav_home_btn", type="primary", use_container_width=True):
             start_over()
-        if st.button("➕ Start New Evaluation", key="sb_nav_new_eval_btn", use_container_width=True):
+        if st.button("Start New Evaluation", key="sb_nav_new_eval_btn", use_container_width=True):
             start_over()
-        if st.button("ℹ️ About the Models", key="sb_nav_about_btn", use_container_width=True):
+        if st.button("About the Models", key="sb_nav_about_btn", use_container_width=True):
             goto("about")
 
         # Lineage / Version Switcher (Section 3.8)
@@ -83,7 +82,7 @@ def render(goto, start_over):
         available_versions = status_data.get("available_versions", []) if status_data else []
         if len(available_versions) > 1:
             st.markdown("---")
-            st.markdown("### 🔄 Evaluation Versions")
+            st.markdown("#### Evaluation Versions")
             version_labels = {v["evaluation_id"]: f"v{v.get('version', 1)} ({v.get('evaluation_id')[-8:]})" for v in available_versions}
             curr_idx = list(version_labels.keys()).index(eval_id) if eval_id in version_labels else 0
             selected_v = st.selectbox(
@@ -99,8 +98,8 @@ def render(goto, start_over):
                 st.rerun()
 
         st.markdown("---")
-        st.markdown("### 🔒 Privacy & Data")
-        if st.button("🗑️ Delete Evaluation Data", key="sb_delete_data_btn", type="secondary", use_container_width=True):
+        st.markdown("#### Privacy & Data")
+        if st.button("Delete Evaluation Data", key="sb_delete_data_btn", type="secondary", use_container_width=True):
             if eval_id:
                 api_client.delete_evaluation(eval_id)
             st.success("Your evaluation data has been deleted.")
@@ -109,7 +108,7 @@ def render(goto, start_over):
     # ── Header ──────────────────────────────────────────────────────────────────
     pitch = input_sum.get("idea_description", "")
     title = pitch.split("\n")[0][:100] if pitch else "Startup Pitch Evaluation"
-    st.title(f"📊 {title}")
+    st.title(f"{title}")
     st.caption(
         f"Stage: **{input_sum.get('stage', '—')}** | "
         f"Industry: **{input_sum.get('industry', '—')}** | "
@@ -120,13 +119,13 @@ def render(goto, start_over):
     # ── Top Download & Navigation Toolbar ─────────────────────────────────────────
     st.markdown(
         """
-        <div style="background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(99, 102, 241, 0.35); border-radius: 10px; padding: 12px 18px; margin: 12px 0 18px 0;">
+        <div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 6px; padding: 12px 18px; margin: 12px 0 18px 0;">
             <div style="display:flex; justify-content:space-between; align-items:center;">
-                <span style="font-weight:700; font-size:0.95rem; color:#F8FAFC;">
-                    📥 Quick Actions & Report Downloads
+                <span style="font-weight:600; font-size:0.92rem; color:#0F172A;">
+                    Report Exports & Actions
                 </span>
-                <span style="font-size:0.8rem; color:#A5B4FC;">
-                    👈 All options also accessible anytime in the left sidebar
+                <span style="font-size:0.8rem; color:#64748B;">
+                    Options also available in the left sidebar
                 </span>
             </div>
         </div>
@@ -135,30 +134,30 @@ def render(goto, start_over):
     )
     m_c1, m_c2, m_c3, m_c4, m_c5 = st.columns([1.5, 1.2, 1.2, 1.2, 1.3])
     with m_c1:
-        if st.button("🏠 Home Screen", key="main_top_nav_home", type="primary", use_container_width=True):
+        if st.button("Home", key="main_top_nav_home", type="primary", use_container_width=True):
             start_over()
     with m_c2:
         if ok_json and json_bytes is not None:
-            st.download_button("📄 JSON", data=json_bytes, file_name=f"report_{eval_id}.json", mime="application/json", key="main_top_dl_json", use_container_width=True)
+            st.download_button("Download JSON", data=json_bytes, file_name=f"report_{eval_id}.json", mime="application/json", key="main_top_dl_json", use_container_width=True)
     with m_c3:
         if ok_html and html_bytes is not None:
-            st.download_button("🌐 HTML", data=html_bytes, file_name=f"report_{eval_id}.html", mime="text/html", key="main_top_dl_html", use_container_width=True)
+            st.download_button("Download HTML", data=html_bytes, file_name=f"report_{eval_id}.html", mime="text/html", key="main_top_dl_html", use_container_width=True)
     with m_c4:
         if ok_pdf and pdf_bytes is not None:
-            st.download_button("📑 PDF", data=pdf_bytes, file_name=f"report_{eval_id}.pdf", mime="application/pdf", key="main_top_dl_pdf", use_container_width=True)
+            st.download_button("Download PDF", data=pdf_bytes, file_name=f"report_{eval_id}.pdf", mime="application/pdf", key="main_top_dl_pdf", use_container_width=True)
     with m_c5:
-        if st.button("➕ New Evaluation", key="main_top_new_eval", use_container_width=True):
+        if st.button("New Evaluation", key="main_top_new_eval", use_container_width=True):
             start_over()
 
     # ── Overall Interpretation Banner ───────────────────────────────────────────
     cat = interpretation.get("category", "Mixed picture")
-    icon, bg_color = INTERP_ICONS.get(cat, ("⚪", "#f5f5f5"))
+    icon, bg_color = INTERP_ICONS.get(cat, ("[Diagnostic]", "#F8FAFC"))
     st.markdown(
         f"""
-        <div style="background-color:{bg_color};border:1px solid rgba(148,163,184,0.2);border-left:6px solid #6366F1;padding:18px 24px;border-radius:10px;margin:12px 0 24px 0;">
-            <div style="font-size:1.25rem;font-weight:700;color:#F8FAFC;margin-bottom:6px;">{icon} Overall Synthesis: {cat}</div>
-            <div style="font-size:0.95rem;color:#E2E8F0;margin-bottom:10px;line-height:1.5;">{interpretation.get('summary', '')}</div>
-            <ul style="margin:0;padding-left:20px;font-size:0.88rem;color:#94A3B8;line-height:1.6;">
+        <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-left:4px solid #0F172A;padding:18px 24px;border-radius:6px;margin:12px 0 24px 0;">
+            <div style="font-size:1.15rem;font-weight:700;color:#0F172A;margin-bottom:6px;">Overall Evaluation: {cat}</div>
+            <div style="font-size:0.92rem;color:#334155;margin-bottom:10px;line-height:1.5;">{interpretation.get('summary', '')}</div>
+            <ul style="margin:0;padding-left:20px;font-size:0.88rem;color:#475569;line-height:1.6;">
                 {''.join(f'<li>{r}</li>' for r in interpretation.get('reasons', []))}
             </ul>
         </div>
@@ -166,8 +165,12 @@ def render(goto, start_over):
         unsafe_allow_html=True,
     )
 
-    # Tab navigation for the sections
-    tab_report, tab_recs, tab_trust = st.tabs(["📑 Full 8-Section Report", "💡 Recommendations", "🛡 Trust & Limitations"])
+    # Prominent pill navigation makes all report sections discoverable immediately.
+    tab_report, tab_recs, tab_trust = st.tabs([
+        "◈  Evaluation Report",
+        "✦  Recommendations",
+        "◌  Trust & Limitations",
+    ])
 
     # ═════════════════════════════════════════════════════════════════════════════
     # TAB 1: 8-SECTION REPORT
@@ -293,9 +296,12 @@ def render(goto, start_over):
                 with target_col:
                     st.markdown(
                         f"""
-                        <div style="background:{badge_bg};border:1px solid #ddd;border-radius:6px;padding:10px 14px;margin-bottom:10px;">
-                            <div style="font-weight:600;font-size:0.95rem;">{icon_a} {a.get('aspect')} &nbsp;<span style="font-size:0.8rem;background:#fff;padding:2px 8px;border-radius:4px;border:1px solid #ccc;">{badge_text}</span></div>
-                            <div style="font-size:0.85rem;color:#444;margin-top:4px;">{a.get('note', '')}</div>
+                        <div style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:6px;padding:12px 16px;margin-bottom:10px;">
+                            <div style="display:flex;justify-content:space-between;align-items:center;">
+                                <span style="font-weight:600;font-size:0.95rem;color:#0F172A;">{a.get('aspect')}</span>
+                                <span style="font-size:0.75rem;font-weight:600;background:#FFFFFF;color:#334155;padding:2px 8px;border-radius:4px;border:1px solid #CBD5E1;">{badge_text}</span>
+                            </div>
+                            <div style="font-size:0.85rem;color:#475569;margin-top:6px;line-height:1.4;">{a.get('note', '')}</div>
                         </div>
                         """,
                         unsafe_allow_html=True,
@@ -308,13 +314,13 @@ def render(goto, start_over):
 
             vague = data_c.get("vague_terms", [])
             if vague:
-                st.markdown("#### 💬 Vague Terms / Buzzwords Detected")
-                st.caption("These buzzwords were identified in the pitch without supporting operational metrics:")
+                st.markdown("#### Vague Terms and Buzzwords Detected")
+                st.caption("These terms were identified in the pitch without supporting operational metrics:")
                 st.write(", ".join(f"`{v}`" for v in vague))
 
             missing_q = data_c.get("missing_information_questions", [])
             if missing_q:
-                with st.expander(f"❓ Clarifying Questions to Address Gaps ({len(missing_q)})"):
+                with st.expander(f"Clarifying Questions to Address Gaps ({len(missing_q)})"):
                     for q in missing_q:
                         st.markdown(f"- **{q.get('aspect', 'Aspect')}**: {q.get('question')}")
 
@@ -449,7 +455,7 @@ def render(goto, start_over):
     # TAB 2: RECOMMENDATIONS (Step 3: Template Playbook / Step 4: LLM)
     # ═════════════════════════════════════════════════════════════════════════════
     with tab_recs:
-        st.markdown("### 💡 Prioritized Strategic Recommendations")
+        st.markdown("### Prioritized Strategic Recommendations")
 
         # Fetch recommendations from backend
         rec_data = api_client.get_recommendations(meta.get("evaluation_id", eval_id))
@@ -460,9 +466,9 @@ def render(goto, start_over):
             if rec_data.get("is_fallback"):
                 st.markdown(
                     """
-                    <div style="border-left:4px solid #2196F3;background:#e3f2fd;padding:12px 16px;border-radius:4px;margin:12px 0 16px 0;">
-                        <strong>📋 Playbook Reference Recommendations (Template-Based)</strong><br>
-                        <span style="font-size:0.88rem;color:#444;">
+                    <div style="border-left:4px solid #475569;background:#F8FAFC;padding:14px 18px;border:1px solid #E2E8F0;border-radius:6px;margin:12px 0 16px 0;">
+                        <strong style="color:#0F172A;font-size:0.95rem;">Playbook Reference Recommendations (Template-Based)</strong><br>
+                        <span style="font-size:0.88rem;color:#475569;display:inline-block;margin-top:4px;line-height:1.5;">
                             These recommendations are synthesized deterministically from our curated startup failure playbook
                             using the prioritized risk signals from Models A, B, C, and D.
                         </span>
@@ -477,16 +483,19 @@ def render(goto, start_over):
             prio_filter = st.radio("Filter by Priority:", ["All", "High", "Medium", "Low"], horizontal=True)
             filtered_recs = [r for r in recs if prio_filter == "All" or r.get("priority") == prio_filter]
 
-            prio_colors = {
-                "High": ("🔴 High Priority", "#ffebee", "#c62828"),
-                "Medium": ("🟡 Medium Priority", "#fff8e1", "#f57f17"),
-                "Low": ("🟢 Low Priority", "#e8f5e9", "#2e7d32"),
+            prio_styles = {
+                "High": ("High Priority", "#FEF2F2", "#DC2626", "#FEE2E2", "#991B1B"),
+                "Medium": ("Medium Priority", "#FFFBEB", "#D97706", "#FEF3C7", "#92400E"),
+                "Low": ("Low Priority", "#F0FDF4", "#16A34A", "#DCFCE7", "#166534"),
             }
 
             st.write(f"Showing **{len(filtered_recs)}** of **{len(recs)}** prioritized recommendations:")
 
             for r in filtered_recs:
-                p_label, p_bg, p_fg = prio_colors.get(r.get("priority", "Medium"), ("⚪ Priority", "#f5f5f5", "#333"))
+                p_label, p_bg, p_border, p_badge_bg, p_badge_text = prio_styles.get(
+                    r.get("priority", "Medium"),
+                    ("Priority", "#F8FAFC", "#94A3B8", "#F1F5F9", "#334155")
+                )
 
                 why_raw = str(r.get('why_it_matters_for_this_startup') or "")
                 if "{'text':" in why_raw or '{"text":' in why_raw:
@@ -498,16 +507,16 @@ def render(goto, start_over):
                 with st.container():
                     st.markdown(
                         f"""
-                        <div style="background:{p_bg};border:1px solid #ddd;border-radius:8px;padding:16px;margin-bottom:12px;">
+                        <div style="background:{p_bg};border:1px solid #E2E8F0;border-left:4px solid {p_border};border-radius:6px;padding:16px 20px;margin-bottom:14px;">
                             <div style="display:flex;justify-content:space-between;align-items:center;">
-                                <span style="font-weight:700;font-size:1.1rem;color:#222;">{r.get('identified_problem_or_risk')}</span>
-                                <span style="background:{p_fg};color:white;padding:3px 10px;border-radius:12px;font-size:0.8rem;font-weight:600;">{p_label}</span>
+                                <span style="font-weight:700;font-size:1.05rem;color:#0F172A;">{r.get('identified_problem_or_risk')}</span>
+                                <span style="background:{p_badge_bg};color:{p_badge_text};border:1px solid {p_border};padding:2px 8px;border-radius:4px;font-size:0.75rem;font-weight:600;">{p_label}</span>
                             </div>
-                            <div style="font-size:0.92rem;color:#444;margin:8px 0 12px 0;">
-                                <b>Why it matters:</b> {why_raw}
+                            <div style="font-size:0.9rem;color:#334155;margin:8px 0 12px 0;line-height:1.5;">
+                                <strong style="color:#0F172A;">Why it matters:</strong> {why_raw}
                             </div>
-                            <div style="background:white;padding:12px;border-radius:6px;border:1px solid #eee;margin-bottom:10px;">
-                                <b>Specific Action:</b> {r.get('specific_action')}
+                            <div style="background:#FFFFFF;padding:12px 14px;border-radius:6px;border:1px solid #E2E8F0;margin-bottom:4px;">
+                                <strong style="color:#0F172A;">Specific Action:</strong> <span style="color:#1E293B;">{r.get('specific_action')}</span>
                             </div>
                         </div>
                         """,
@@ -635,4 +644,3 @@ def render(goto, start_over):
                         st.markdown(f"- {badge} **{comp_name}:** {status_str}")
                 else:
                     st.markdown(f"- ℹ️ {m_val}")
-

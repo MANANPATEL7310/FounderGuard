@@ -11,21 +11,33 @@ STEPS = {
     5: "Evidence (optional)",
 }
 
+# First-level administrative areas for the countries offered by the form.  These
+# values are presentation metadata only; existing evaluation normalization stays
+# unchanged and continues to treat non-US regions as contextual information.
+COUNTRY_REGIONS = {
+    "GBR": [("ENG", "England"), ("SCT", "Scotland"), ("WLS", "Wales"), ("NIR", "Northern Ireland")],
+    "CAN": [("AB", "Alberta"), ("BC", "British Columbia"), ("MB", "Manitoba"), ("NB", "New Brunswick"), ("NL", "Newfoundland and Labrador"), ("NS", "Nova Scotia"), ("NT", "Northwest Territories"), ("NU", "Nunavut"), ("ON", "Ontario"), ("PE", "Prince Edward Island"), ("QC", "Quebec"), ("SK", "Saskatchewan"), ("YT", "Yukon")],
+    "DEU": [("BW", "Baden-Württemberg"), ("BY", "Bavaria"), ("BE", "Berlin"), ("BB", "Brandenburg"), ("HB", "Bremen"), ("HH", "Hamburg"), ("HE", "Hesse"), ("MV", "Mecklenburg-Vorpommern"), ("NI", "Lower Saxony"), ("NW", "North Rhine-Westphalia"), ("RP", "Rhineland-Palatinate"), ("SL", "Saarland"), ("SN", "Saxony"), ("ST", "Saxony-Anhalt"), ("SH", "Schleswig-Holstein"), ("TH", "Thuringia")],
+    "FRA": [("ARA", "Auvergne-Rhône-Alpes"), ("BFC", "Bourgogne-Franche-Comté"), ("BRE", "Brittany"), ("CVL", "Centre-Val de Loire"), ("COR", "Corsica"), ("GES", "Grand Est"), ("HDF", "Hauts-de-France"), ("IDF", "Île-de-France"), ("NOR", "Normandy"), ("NAQ", "Nouvelle-Aquitaine"), ("OCC", "Occitanie"), ("PDL", "Pays de la Loire"), ("PAC", "Provence-Alpes-Côte d’Azur")],
+    "IND": [("AP", "Andhra Pradesh"), ("AR", "Arunachal Pradesh"), ("AS", "Assam"), ("BR", "Bihar"), ("CT", "Chhattisgarh"), ("GA", "Goa"), ("GJ", "Gujarat"), ("HR", "Haryana"), ("HP", "Himachal Pradesh"), ("JH", "Jharkhand"), ("KA", "Karnataka"), ("KL", "Kerala"), ("MP", "Madhya Pradesh"), ("MH", "Maharashtra"), ("MN", "Manipur"), ("ML", "Meghalaya"), ("MZ", "Mizoram"), ("NL", "Nagaland"), ("OD", "Odisha"), ("PB", "Punjab"), ("RJ", "Rajasthan"), ("SK", "Sikkim"), ("TN", "Tamil Nadu"), ("TS", "Telangana"), ("TR", "Tripura"), ("UP", "Uttar Pradesh"), ("UK", "Uttarakhand"), ("WB", "West Bengal"), ("DL", "Delhi"), ("JK", "Jammu and Kashmir"), ("LA", "Ladakh")],
+    "AUS": [("ACT", "Australian Capital Territory"), ("NSW", "New South Wales"), ("NT", "Northern Territory"), ("QLD", "Queensland"), ("SA", "South Australia"), ("TAS", "Tasmania"), ("VIC", "Victoria"), ("WA", "Western Australia")],
+    "SGP": [("SG", "Singapore")],
+    "ISR": [("D", "Southern District"), ("M", "Central District"), ("TA", "Tel Aviv District"), ("J", "Jerusalem District"), ("HA", "Haifa District"), ("Z", "Northern District")],
+}
+
 
 def _step_header(current: int):
     cols = st.columns(len(STEPS))
     for i, (num, label) in enumerate(STEPS.items()):
         is_active = num == current
         is_done = num < current
-        bg = "rgba(99, 102, 241, 0.2)" if is_active else ("rgba(16, 185, 129, 0.15)" if is_done else "rgba(148, 163, 184, 0.08)")
-        border = "#6366F1" if is_active else ("#10B981" if is_done else "rgba(148, 163, 184, 0.2)")
-        color = "#F8FAFC" if (is_active or is_done) else "#94A3B8"
-        icon = "✓" if is_done else str(num)
+        state_class = "is-active" if is_active else "is-done" if is_done else ""
+        tag = "DONE" if is_done else f"STEP {num}"
         cols[i].markdown(
             f"""
-            <div style="background:{bg};border:1px solid {border};border-radius:10px;padding:8px 10px;text-align:center;">
-                <span style="font-size:0.75rem;font-weight:700;color:{border};">STEP {icon}</span><br>
-                <span style="font-size:0.85rem;font-weight:600;color:{color};">{label}</span>
+            <div class="fg-step {state_class}">
+                <span class="fg-step-tag">{tag}</span><br>
+                <span class="fg-step-label">{label}</span>
             </div>
             """,
             unsafe_allow_html=True,
@@ -38,18 +50,31 @@ def render(goto, opts: dict, start_over):
 
     # Sidebar navigation
     with st.sidebar:
-        st.markdown("### Navigation")
-        if st.button("⬅ Back to Landing", key=f"form_sidebar_landing_{step}"):
+        st.markdown(
+            """
+            <div class="fg-sidebar-brand">
+                <div class="fg-sidebar-mark">FG</div>
+                <div>
+                    <div class="fg-sidebar-title">FounderGuard</div>
+                    <div class="fg-sidebar-subtitle">Evaluation workspace</div>
+                </div>
+            </div>
+            <div class="fg-sidebar-label">Navigation</div>
+            """,
+            unsafe_allow_html=True,
+        )
+        if st.button("←  Back to Landing", key=f"form_sidebar_landing_{step}", use_container_width=True):
             start_over()
         st.markdown("---")
-        st.info("💡 Nothing is saved until you submit on the Review page.")
-        if st.button("🔄 Start Over", key=f"form_sidebar_startover_{step}"):
+        st.info("Notice: Nothing is saved until you submit on the Review page.")
+        if st.button("↻  Start Over", key=f"form_sidebar_startover_{step}", use_container_width=True):
             start_over()
         st.markdown("---")
-        if st.button("ℹ About the Models", key=f"form_sidebar_about_{step}"):
+        st.markdown('<div class="fg-sidebar-label">Resources</div>', unsafe_allow_html=True)
+        if st.button("◌  About the Models", key=f"form_sidebar_about_{step}", use_container_width=True):
             goto("about")
 
-    st.title("🚀 Startup Evaluation Form")
+    st.title("Startup Evaluation Form")
     _step_header(step)
 
     if step == 1:
@@ -175,29 +200,53 @@ def _step2(goto, opts):
     curr_country = st.session_state.get("f_country", "USA")
     if isinstance(curr_country, dict):
         curr_country = curr_country.get("code", "USA")
-
-    state_codes = [""]
-    state_display_names = {"": "— Select State —"}
-    for s in raw_states:
-        if isinstance(s, dict):
-            s_code = s.get("code", "")
-            s_name = s.get("name", s_code)
-            state_codes.append(s_code)
-            state_display_names[s_code] = f"{s_name} ({s_code})"
-        else:
-            s_str = str(s)
-            state_codes.append(s_str)
-            state_display_names[s_str] = s_str
-
-    curr_state = st.session_state.get("f_state", "")
-    if isinstance(curr_state, dict):
-        curr_state = curr_state.get("code", "")
+    if curr_country not in country_codes:
+        st.session_state["f_country"] = country_codes[0]
 
     def _safe_idx(lst, val, default=0):
         try:
             return lst.index(val) if val in lst else default
         except Exception:
             return default
+
+    def _reset_region() -> None:
+        """Clear a previous country selection before showing the new country's list."""
+        st.session_state["f_state"] = ""
+
+    # Country deliberately sits outside the form so Streamlit reruns immediately
+    # and the region selector updates as soon as the user changes country.
+    country = st.selectbox(
+        "Country *",
+        options=country_codes,
+        key="f_country",
+        format_func=lambda code: country_display_names.get(code, code),
+        help="Select a country to load its states, provinces, or regions.",
+        on_change=_reset_region,
+    )
+
+    if country == "USA":
+        country_regions = raw_states
+    else:
+        country_regions = [
+            {"code": code, "name": name}
+            for code, name in COUNTRY_REGIONS.get(country, [])
+        ]
+
+    state_codes = [""]
+    state_display_names = {"": "— Select State / Region —"}
+    for region_item in country_regions:
+        if isinstance(region_item, dict):
+            region_code = region_item.get("code", "")
+            region_name = region_item.get("name", region_code)
+            state_codes.append(region_code)
+            state_display_names[region_code] = f"{region_name} ({region_code})"
+        else:
+            region_code = str(region_item)
+            state_codes.append(region_code)
+            state_display_names[region_code] = region_code
+
+    if st.session_state.get("f_state", "") not in state_codes:
+        st.session_state["f_state"] = ""
 
     with st.form("step2_form"):
         industry = st.selectbox(
@@ -206,24 +255,19 @@ def _step2(goto, opts):
             index=_safe_idx(industries, st.session_state["f_industry"]),
             help="Used to map to Model B's category and Model C's sector.",
         )
-        country = st.selectbox(
-            "Country *",
-            options=country_codes,
-            index=_safe_idx(country_codes, curr_country),
-            format_func=lambda code: country_display_names.get(code, code),
-            help="Non-US startups run Model B with a location warning. Model A handles non-US gracefully.",
+        region_label = "US State *" if country == "USA" else "State / Province / Region (optional)"
+        region_help = (
+            "Required for US startups. Unlisted states become OTHER in Model B."
+            if country == "USA"
+            else "Select the state, province, or region for the country you selected."
         )
-
-        # US state — shown only for USA
-        state = ""
-        if country == "USA":
-            state = st.selectbox(
-                "US State *",
-                options=state_codes,
-                index=_safe_idx(state_codes, curr_state),
-                format_func=lambda code: state_display_names.get(code, code),
-                help="Required for US startups. Unlisted states become OTHER in Model B.",
-            )
+        state = st.selectbox(
+            region_label,
+            options=state_codes,
+            key="f_state",
+            format_func=lambda code: state_display_names.get(code, code),
+            help=region_help,
+        )
 
         target_market = st.selectbox(
             "Target market *",
@@ -263,8 +307,9 @@ def _step2(goto, opts):
                 st.error(e)
             return
         st.session_state["f_industry"] = industry
-        st.session_state["f_country"] = country
-        st.session_state["f_state"] = state
+        # Country and region use widget-backed session keys, so Streamlit has
+        # already stored them. Reassigning those keys after instantiation raises
+        # StreamlitAPIException.
         st.session_state["f_target_market"] = target_market
         st.session_state["f_business_model"] = biz_model_sel
         goto("form", step=3)
@@ -452,4 +497,3 @@ def _step5(goto, opts):
         st.session_state["f_competitors"] = competitors
         st.session_state["f_traction"] = traction
         goto("review")
-

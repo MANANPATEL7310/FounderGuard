@@ -63,11 +63,11 @@ def _build_payload() -> dict:
 
 
 def render(goto, start_over):
-    st.title("🔍 Review Your Submission")
+    st.title("Review Your Submission")
     st.caption("Check the details below before running the evaluation. This is your last chance to edit.")
 
     with st.sidebar:
-        if st.button("🔄 Start Over", key="review_sidebar_start_over"):
+        if st.button("Start Over", key="review_sidebar_start_over"):
             start_over()
 
     payload = _build_payload()
@@ -80,9 +80,9 @@ def render(goto, start_over):
             detail = result.get("detail", "Unknown validation error.")
             st.error(f"Validation failed: {detail}")
             col1, col2 = st.columns(2)
-            if col1.button("← Edit", key="review_val_err_edit"):
+            if col1.button("Edit Submission", key="review_val_err_edit"):
                 goto("form", step=5)
-            if col2.button("🔄 Start Over", key="review_val_err_start_over"):
+            if col2.button("Start Over", key="review_val_err_start_over"):
                 start_over()
             return
         st.session_state["validate_result"] = result
@@ -96,16 +96,16 @@ def render(goto, start_over):
     col_left, col_right = st.columns(2)
 
     with col_left:
-        st.markdown("#### 📋 Idea")
+        st.markdown("#### Pitch Summary")
         st.write(st.session_state["f_idea"][:300] + ("…" if len(st.session_state["f_idea"]) > 300 else ""))
 
-        st.markdown("#### 🏭 Classification")
+        st.markdown("#### Classification")
         st.write(f"**Industry:** {norm.get('industry', '—')}")
         st.write(f"**Country:** {norm.get('country', '—')}  |  **State:** {norm.get('state') or '—'}")
         st.write(f"**Stage:** {norm.get('stage', '—')}")
 
     with col_right:
-        st.markdown("#### 💰 Funding")
+        st.markdown("#### Funding History")
         orig = norm.get("original_funding", 0)
         orig_cur = norm.get("original_currency", "USD")
         usd = norm.get("funding_total_usd", 0)
@@ -120,14 +120,14 @@ def render(goto, start_over):
         else:
             st.write("No external funding entered.")
 
-        st.markdown("#### 👥 Team")
+        st.markdown("#### Team")
         st.write(f"**Size:** {st.session_state['f_team_size']}")
         st.write(f"**Skills:** {', '.join(st.session_state['f_team_skills']) or '—'}")
         st.write(f"**Experience:** {st.session_state['f_founder_experience']}")
 
     # ── Model coverage preview ────────────────────────────────────────────────
     st.markdown("---")
-    st.markdown("#### 🤖 Which models will run?")
+    st.markdown("#### Model Readiness & Applicability")
 
     model_labels = {
         "model_a": "A — Outcome Classifier (CatBoost)",
@@ -142,42 +142,42 @@ def render(goto, start_over):
         reason = app_info.get("reason", "")
         with cols[i]:
             if applicable:
-                st.success(f"✅ {label.split('—')[0]}")
+                st.success(f"[Ready] {label.split('—')[0]}")
                 st.caption(label.split("—")[1].strip())
             else:
-                st.warning(f"⊘ {label.split('—')[0]}")
+                st.warning(f"[N/A] {label.split('—')[0]}")
                 st.caption(reason)
 
     # ── Warnings ──────────────────────────────────────────────────────────────
     if warnings:
         st.markdown("---")
-        st.markdown("#### ⚠ Validation Warnings")
+        st.markdown("#### Validation Warnings")
         for w in warnings:
             st.warning(w)
 
-    # ── Provenance ────────────────────────────────────────────────────────────
+    # ── Provenance ────────────────────────────────────────────────────
     provided = norm.get("provenance_provided_fields", [])
     missing = norm.get("provenance_missing_fields", [])
-    with st.expander(f"📊 Field provenance ({len(provided)} provided, {len(missing)} not provided)"):
+    with st.expander(f"Field Provenance Summary ({len(provided)} provided, {len(missing)} not provided)"):
         col_p, col_m = st.columns(2)
         col_p.markdown("**Provided**")
         for f in provided:
-            col_p.write(f"✓ {f}")
+            col_p.write(f"- {f}")
         col_m.markdown("**Not provided** *(blank = not stated, never negative)*")
         for f in missing:
-            col_m.write(f"○ {f}")
+            col_m.write(f"- {f}")
 
     # ── Edit / Submit ─────────────────────────────────────────────────────────
     st.markdown("---")
     col_edit, col_submit = st.columns([2, 3])
 
     with col_edit:
-        if st.button("← Edit Submission", key="review_bottom_edit_btn", use_container_width=True):
+        if st.button("Edit Submission", key="review_bottom_edit_btn", use_container_width=True):
             st.session_state["validate_result"] = None
             goto("form", step=5)
 
     with col_submit:
-        if st.button("🚀 Submit for Evaluation", key="review_bottom_submit_btn", type="primary", use_container_width=True):
+        if st.button("Submit for Evaluation", key="review_bottom_submit_btn", type="primary", use_container_width=True):
             with st.spinner("Submitting…"):
                 ok, resp = api_client.submit_evaluation(payload)
             if ok:

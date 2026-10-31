@@ -7,13 +7,13 @@ from frontend.config import MAX_POLL_ATTEMPTS, POLL_INTERVAL_S
 
 
 def render(goto):
-    st.title("⚙ Evaluating Your Startup...")
+    st.title("Analyzing Startup Submission")
     st.caption("Running four independent machine learning models and synthesizing the evaluation report.")
 
     eval_id = st.session_state.get("eval_id")
     if not eval_id:
         st.error("No evaluation ID found in session.")
-        if st.button("← Return to Start"):
+        if st.button("Return to Home"):
             goto("landing")
         return
 
@@ -53,13 +53,13 @@ def render(goto):
             m_stat = per_model.get(m_id, "running")
             with cols[idx]:
                 if m_stat == "ok":
-                    st.success(f"✓ {label}")
+                    st.success(f"[Complete] {label}")
                 elif m_stat == "not_applicable":
-                    st.info(f"⊘ {label} (N/A)")
+                    st.info(f"[N/A] {label}")
                 elif m_stat in ("pending", "running"):
-                    st.warning(f"⏳ {label}")
+                    st.warning(f"[Running] {label}")
                 else:
-                    st.error(f"✕ {label} ({m_stat})")
+                    st.error(f"[Degraded] {label}")
 
         if current_status in ("report_ready", "complete"):
             progress_bar.progress(1.0)
@@ -78,16 +78,16 @@ def render(goto):
         time.sleep(POLL_INTERVAL_S)
 
     if poll_success:
-        st.success("Evaluation ready! Opening report...")
+        st.success("Evaluation ready! Loading report...")
         time.sleep(0.5)
         goto("report")
     else:
         st.error("Evaluation timed out or could not be finalized.")
         col1, col2 = st.columns(2)
         with col1:
-            if st.button("🔄 Retry Status Check"):
+            if st.button("Retry Status Check"):
                 st.rerun()
         with col2:
-            if st.button("← Return to Form"):
+            if st.button("Return to Form"):
                 goto("form", step=1)
 
