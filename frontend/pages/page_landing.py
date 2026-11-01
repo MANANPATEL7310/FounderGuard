@@ -33,8 +33,9 @@ def render(goto):
     # Backend health check
     if not api_client.check_backend_health():
         st.error(
-            "Notice: The evaluation backend is not reachable. "
-            "Start it with: `uvicorn backend.main:app --port 8000`"
+            f"Notice: The evaluation backend is not reachable at `{api_client._url('')}`. "
+            "If running locally, start it with `uvicorn backend.main:app --port 8000`. "
+            "In cloud deployment, please ensure the backend service is running and `BACKEND_URL` is set correctly."
         )
         if st.button("Retry Connection"):
             st.rerun()
