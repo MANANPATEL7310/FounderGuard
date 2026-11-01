@@ -131,8 +131,11 @@ def inject_global_styles(theme: str) -> None:
         [data-testid="stAppViewContainer"] .main, header[data-testid="stHeader"] {{ position:relative; z-index:1; }}
         #MainMenu, footer:not(.fg-site-footer) {{ visibility:hidden; }}
         footer.fg-site-footer {{ visibility:visible; }}
-        button[data-testid="stBaseButton-header"] {{ display:none !important; }}
-        header[data-testid="stHeader"], .stAppHeader {{ height:0 !important; min-height:0 !important; padding:0 !important; background:transparent !important; }}
+        /* The collapsed sidebar toggle is rendered inside Streamlit's header.
+           Hiding all header buttons (or clipping a zero-height header) also
+           removes the only way to open the app navigation in a deployment. */
+        header[data-testid="stHeader"], .stAppHeader {{ height:0 !important; min-height:0 !important; padding:0 !important; overflow:visible !important; background:transparent !important; }}
+        button[data-testid="stBaseButton-header"] {{ display:flex !important; visibility:visible !important; opacity:1 !important; }}
         [data-testid="stToolbar"], [data-testid="stStatusWidget"] {{ display:none !important; }}
         .block-container {{
             max-width: 1180px !important;
