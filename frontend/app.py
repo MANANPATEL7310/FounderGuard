@@ -22,7 +22,7 @@ from frontend import api_client
 st.set_page_config(
     page_title="Startup Evaluation — FounderGuard AI",
     layout="wide",
-    initial_sidebar_state="collapsed",
+    initial_sidebar_state="expanded",
 )
 
 # ── Session-state initialisation ──────────────────────────────────────────────
@@ -75,9 +75,9 @@ for k, v in DEFAULTS.items():
 
 # Appearance is a user preference, not part of a fresh evaluation reset.
 if "ui_theme" not in st.session_state:
-    st.session_state["ui_theme"] = "light"
+    st.session_state["ui_theme"] = "dark"
 if "theme_toggle" not in st.session_state:
-    st.session_state["theme_toggle"] = False
+    st.session_state["theme_toggle"] = True
 
 
 def inject_global_styles(theme: str) -> None:
@@ -131,8 +131,7 @@ def inject_global_styles(theme: str) -> None:
         [data-testid="stAppViewContainer"] .main, header[data-testid="stHeader"] {{ position:relative; z-index:1; }}
         #MainMenu, footer:not(.fg-site-footer) {{ visibility:hidden; }}
         footer.fg-site-footer {{ visibility:visible; }}
-        button[data-testid="stBaseButton-header"] {{ display:none !important; }}
-        header[data-testid="stHeader"], .stAppHeader {{ height:0 !important; min-height:0 !important; padding:0 !important; background:transparent !important; }}
+        header[data-testid="stHeader"], .stAppHeader {{ background:transparent !important; }}
         [data-testid="stToolbar"], [data-testid="stStatusWidget"] {{ display:none !important; }}
         .block-container {{
             max-width: 1180px !important;
@@ -365,7 +364,7 @@ with st.container():
         if curr_page == "form":
             step_num = st.session_state.get("step", 1)
             st.markdown(
-                f"<div style='text-align:right;padding-top:6px;font-size:0.85rem;color:#475569;font-weight:600;'>Step {step_num} of 5</div>",
+                f"<div style='text-align:right;padding-top:6px;font-size:0.85rem;color:var(--fg-muted);font-weight:600;'>Step {step_num} of 5</div>",
                 unsafe_allow_html=True,
             )
         elif curr_page == "landing":

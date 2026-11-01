@@ -6,6 +6,25 @@ from frontend.config import BACKEND_URL
 
 
 def render(goto):
+    with st.sidebar:
+        st.markdown(
+            """
+            <div class="fg-sidebar-brand">
+                <div class="fg-sidebar-mark">FG</div>
+                <div>
+                    <div class="fg-sidebar-title">FounderGuard AI</div>
+                    <div class="fg-sidebar-subtitle">Model Documentation</div>
+                </div>
+            </div>
+            <div class="fg-sidebar-label">Navigation</div>
+            """,
+            unsafe_allow_html=True,
+        )
+        if st.button("Return to Home", key="about_sb_home_btn", use_container_width=True):
+            goto("landing")
+        if st.button("Start Startup Evaluation", key="about_sb_start_btn", type="primary", use_container_width=True):
+            goto("form", step=1)
+
     st.title("About the Machine Learning Models")
     st.caption("Architecture, training provenance, validation metrics, and limitations.")
 

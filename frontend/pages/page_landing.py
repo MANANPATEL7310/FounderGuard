@@ -4,6 +4,32 @@ from frontend import api_client
 
 
 def render(goto):
+    # Sidebar navigation
+    with st.sidebar:
+        st.markdown(
+            """
+            <div class="fg-sidebar-brand">
+                <div class="fg-sidebar-mark">FG</div>
+                <div>
+                    <div class="fg-sidebar-title">FounderGuard AI</div>
+                    <div class="fg-sidebar-subtitle">Founder Intelligence</div>
+                </div>
+            </div>
+            <div class="fg-sidebar-label">Navigation</div>
+            """,
+            unsafe_allow_html=True,
+        )
+        if st.button("Start Evaluation", key="landing_sb_start_btn", type="primary", use_container_width=True):
+            goto("form", step=1)
+        if st.button("About the Models", key="landing_sb_about_btn", use_container_width=True):
+            goto("about")
+        st.markdown("---")
+        st.markdown('<div class="fg-sidebar-label">Platform Status</div>', unsafe_allow_html=True)
+        if api_client.check_backend_health():
+            st.success("● Backend Online")
+        else:
+            st.warning("○ Backend Connecting...")
+
     # Brand-led hero. All user journeys and backend calls below stay unchanged.
     # Preserve the app's established Streamlit title contract; the branded headline below is visible.
     st.title("Startup Evaluation", anchor="landing-page-title")
